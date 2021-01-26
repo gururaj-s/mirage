@@ -219,10 +219,11 @@ void display_histogram(void){
     s_count[bucket[ii]]++;
   }
 
-  printf("\n");
+  //  printf("\n");
+  printf("\nOccupancy: \t\t Count");
   for(ii=0; ii<= MAX_FILL; ii++){
     double perc = 100.0 * (double)s_count[ii]/(double)(NUM_BUCKETS);
-    printf("\n Bucket[%2u Fill]: %u (%4.2f)", ii, s_count[ii], perc);
+    printf("\nBucket[%2u Fill]: \t %u \t (%4.2f)", ii, s_count[ii], perc);
   }
 
   printf("\n");
@@ -314,7 +315,9 @@ int main(int argc, char* argv[]){
   NUM_BILLION_TRIES  = atoi(argv[2]);
   myseed = atoi(argv[3]);
 
-  printf("Running simulation with SPILL_THRESHOLD:%d, NUM_TRIES:%d Billion, Seed:%d\n\n",SPILL_THRESHOLD,NUM_BILLION_TRIES,myseed);
+  printf("Cache Configuration: %d MB, %d skews, %d ways (%d ways/skew)\n",CACHE_SZ_BYTES/1024/1024,NUM_SKEWS,BASE_WAYS_PER_SKEW);
+  printf("AVG-BALLS-PER-BUCKET:%d, BUCKET-SPILL-THRESHOLD:%d \n",BASE_WAYS_PER_SKEW,SPILL_THRESHOLD);
+  printf("Simulation Parameters - BALL_THROWS:%d Billion, SEED:%d\n\n",NUM_BILLION_TRIES,myseed);
   
   uns64 ii;
   mtrand->seed(myseed);
@@ -344,23 +347,25 @@ int main(int argc, char* argv[]){
     printf(" %dBn\n",bn_i+1);fflush(stdout);    
   }
 
-  printf("\n\nBucket-Fill Snapshot at End\n");
+  printf("\n\nBucket-Occupancy Snapshot at End of Experiment\n");
   display_histogram();
-  printf("\n\n\n");
+  printf("\n\n");
 
-  printf("Bucket-Fill Average (Seen by Each Ball)\n");
+  printf("Distribution of Bucket-Occupancy (Averaged across Ball Throws) => Used for P(Bucket = k balls) calculation \n");
+  printf("\nOccupancy: \t\t %16s \t P(Bucket=k balls)","Count");
   for(ii=0; ii<= MAX_FILL; ii++){
     double perc = 100.0 * (double)bucket_fill_observed[ii]/(NUM_SKEWS*(double)NUM_BILLION_TRIES*(double)BILLION_TRIES);
-    printf("\n Bucket[%2u Fill]: %llu (%5.3f)", ii, bucket_fill_observed[ii], perc);
+    printf("\nBucket[%2u Fill]: \t %16llu \t (%5.3f)", ii, bucket_fill_observed[ii], perc);
   }
 
   printf("\n\n\n");
 
-  printf("Bucket-Fill Best-of-2 (Seen by Each Ball)\n");
-  printf("\n");
+  printf("Distribution of Balls-in-Dest-Bucket on Ball-Insertion (Best-Of-2 Indexed-Buckets) => Spill-Count = Spills from Bucket-With-%d-Balls\n",SPILL_THRESHOLD);
+  //  printf("\n");
+  printf("\nBalls-in-Dest-Bucket (k) \t\t Spills from Bucket-With-k-Balls)\n");
   for(ii=0; ii<MAX_FILL; ii++){
     double perc = 100.0*(double)(stat_counts[ii])/(double)((double)NUM_BILLION_TRIES*(double)BILLION_TRIES);
-    printf("%2llu:\t %8llu\t (%5.3f)\n", ii, stat_counts[ii], perc);
+    printf("%2llu:\t\t\t\t %16llu\t (%5.3f)\n", ii, stat_counts[ii], perc);
   }
 
   printf("\nSpill Count: %llu (%5.3f)\n", spill_count,
