@@ -181,7 +181,7 @@ void display_histogram(void){
 
 void sanity_check(void){
   uns ii, count=0;
-  uns s_count[MAX_FILL];
+  uns s_count[MAX_FILL+1];
 
   for(ii=0; ii<= MAX_FILL; ii++){
     s_count[ii]=0;
