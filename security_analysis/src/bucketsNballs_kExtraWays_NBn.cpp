@@ -28,7 +28,7 @@ unsigned int myseed = 1;
 //16MB LLC
 #define CACHE_SZ_BYTES            (16*1024*1024) 
 #define LINE_SZ_BYTES             (64)
-#define NUM_BUCKETS               ((CACHE_SZ_BYTES/LINE_SZ_BYTES)/(BASE_WAYS_PER_SKEW*NUM_SKEWS))
+#define NUM_BUCKETS               ((CACHE_SZ_BYTES/LINE_SZ_BYTES)/(BASE_WAYS_PER_SKEW))
 #define NUM_BUCKETS_PER_SKEW      (NUM_BUCKETS/NUM_SKEWS)
 
 //Bucket Capacities
@@ -55,20 +55,22 @@ typedef double dbl;
 // EXPERIMENT VARIABLES
 /////////////////////////////////////////////////////
 
-//For each Bucket (Set), tracks number of Balls in Bucket
-//(Similar to Tag-Store)
+//For each Bucket (Set), number of Balls in Bucket
+//(Data-Structure Similar to Tag-Store)
 uns64 bucket[NUM_BUCKETS];
 
-//For each Ball (Cache-Line), tracks the Bucket (Set) it is in
-//(Similar to Data-Store RPTR)
+//For each Ball (Cache-Line), which Bucket (Set) it is in
+//(Data-Structure Similar to Data-Store RPTR)
 uns64 balls[NUM_BUCKETS*BALLS_PER_BUCKET];
 
-//Number of Fills Per Bucket 
+//Number of Times Each Bucket Indexed 
 uns64 bucket_fill_observed[MAX_FILL+1];
+//Number of Times Bucket Containing N Balls has a Ball-Insertion
 uns64 stat_counts[MAX_FILL+1];
 
-//Counts Number of Spills from Buckets
+//Number of Spills from Buckets
 uns64 spill_count = 0;
+//Number of Spills despite relocation attempts.
 uns64 cuckoo_spill_count = 0;
 
 //Tracks if Initialization of Buckets Done
@@ -307,7 +309,8 @@ int main(int argc, char* argv[]){
 
   //Get arguments:
   assert((argc == 4) && "Need 3 arguments: (EXTRA_BUCKET_CAPACITY:[0-8] BN_BALL_THROWS:[1-10^5] SEED:[1-400])");
-  SPILL_THRESHOLD = atoi(argv[1]);
+  EXTRA_BUCKET_CAPACITY = atoi(argv[1]);
+  SPILL_THRESHOLD = BASE_WAYS_PER_SKEW + EXTRA_BUCKET_CAPACITY;
   NUM_BILLION_TRIES  = atoi(argv[2]);
   myseed = atoi(argv[3]);
 
