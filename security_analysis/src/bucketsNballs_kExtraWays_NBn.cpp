@@ -6,54 +6,87 @@
 
 #include "mtrand.h"
 
-//argv[1]
-int SPILL_THRESHOLD = 13;
-//argv[2]
+/////////////////////////////////////////////////////
+// COMMAND-LINE ARGUMENTS
+/////////////////////////////////////////////////////
+//argv[1] : EXTRA TAGS PER SET (PER SKEW)
+int EXTRA_BUCKET_CAPACITY = 5;
+
+//argv[2] : NUMBER OF BALLS THROWN
 int NUM_BILLION_TRIES = 1;
 
-#define BILLION_TRIES             (1000*1000*1000)
-#define HUNDRED_MILLION_TRIES     (100*1000*1000)
+//argv[3] : SEED
+unsigned int myseed = 1;
 
-#define NUM_SKEWS                      (2)
-#define BASE_WAYS_PER_SKEW             (8)
+/////////////////////////////////////////////////////
+// DEFINES
+/////////////////////////////////////////////////////
+//Cache Configuration
+//16 Way LLC
+#define BASE_WAYS_PER_SKEW        (8)
+#define NUM_SKEWS                 (2)
+//16MB LLC
+#define CACHE_SZ_BYTES            (16*1024*1024) 
+#define LINE_SZ_BYTES             (64)
+#define NUM_BUCKETS               ((CACHE_SZ_BYTES/LINE_SZ_BYTES)/(BASE_WAYS_PER_SKEW*NUM_SKEWS))
+#define NUM_BUCKETS_PER_SKEW      (NUM_BUCKETS/NUM_SKEWS)
 
-//2MB Cache
-//#define NUM_BUCKETS_PER_SKEW  (1<<11)
-//#define NUM_BUCKETS           (1<<12)
-
-//16 MB
-#define NUM_BUCKETS_PER_SKEW  (1<<14)
-#define NUM_BUCKETS           (1<<15)
-
+//Bucket Capacities
 #define BALLS_PER_BUCKET      (8)
 #define MAX_FILL              (16)
+int SPILL_THRESHOLD = BALLS_PER_BUCKET + EXTRA_BUCKET_CAPACITY;
 
-// Tie-Breaking Policy between Skews.
+// Tie-Breaking Policy between Skews on Ball-Throws
 //0 - Randomly picks either skew on Ties. 
 //1 - Always picks Skew-0 on Ties.
 #define BREAK_TIES_PREFERENTIALLY      (0)
 
-MTRand *mtrand=new MTRand();
+//Experiment Size
+#define BILLION_TRIES             (1000*1000*1000)
+#define HUNDRED_MILLION_TRIES     (100*1000*1000)
 
+//Types
 typedef unsigned int uns;
 typedef unsigned long long uns64;
 typedef double dbl;
 
+
+/////////////////////////////////////////////////////
+// EXPERIMENT VARIABLES
+/////////////////////////////////////////////////////
+
+//For each Bucket (Set), tracks number of Balls in Bucket
+//(Similar to Tag-Store)
 uns64 bucket[NUM_BUCKETS];
+
+//For each Ball (Cache-Line), tracks the Bucket (Set) it is in
+//(Similar to Data-Store RPTR)
 uns64 balls[NUM_BUCKETS*BALLS_PER_BUCKET];
 
-bool init_buckets_done = false;
+//Number of Fills Per Bucket 
 uns64 bucket_fill_observed[MAX_FILL+1];
 uns64 stat_counts[MAX_FILL+1];
 
+//Counts Number of Spills from Buckets
 uns64 spill_count = 0;
 uns64 cuckoo_spill_count = 0;
 
+//Tracks if Initialization of Buckets Done
+bool init_buckets_done = false;
+
+//Mersenne Twister Rand Generator
+MTRand *mtrand=new MTRand();
+
 /////////////////////////////////////////////////////
-//---- Used for relocating a filled bucket ---------
+// FUNCTIONS - Ball Insertion, Removal, Spill, etc.
 /////////////////////////////////////////////////////
 
-//Based on which skew spill happened; cuckoo into other recursively.
+/////////////////////////////////////////////////////
+// Spill Ball: relocating filled bucket
+// -- Based on which skew spill happened;
+// -- cuckoo into other recursively.
+/////////////////////////////////////////////////////
+
 void spill_ball(uns64 index, uns64 ballID){
   uns done=0;
 
@@ -86,13 +119,18 @@ void spill_ball(uns64 index, uns64 ballID){
 }
 
 /////////////////////////////////////////////////////
+// Insert Ball in Bucket
+// -- ballID => ID of Data-Store Entry (ball) which got evicted via global eviction
 /////////////////////////////////////////////////////
 
 uns insert_ball(uns64 ballID){
 
+  //Index for Rand Bucket in Skew-0
   uns64 index1 = mtrand->randInt(NUM_BUCKETS_PER_SKEW - 1);
+  //Index for Rand Bucket in Skew-1
   uns64 index2 = NUM_BUCKETS_PER_SKEW + mtrand->randInt(NUM_BUCKETS_PER_SKEW - 1);
 
+  //Increments Tracking of Indexed Buckets
   if(init_buckets_done){
     bucket_fill_observed[bucket[index1]]++;
     bucket_fill_observed[bucket[index2]]++;
@@ -101,6 +139,8 @@ uns insert_ball(uns64 ballID){
   uns64 index;
   uns retval;
 
+  //------ LOAD AWARE SKEW SELECTION -----
+  //Identify which Bucket (index) has Less Load
   if(bucket[index2] < bucket[index1]){
     index = index2;
   } else if (bucket[index1] < bucket[index2]){
@@ -115,17 +155,19 @@ uns insert_ball(uns64 ballID){
       index = index2;
 
 #elif BREAK_TIES_PREFERENTIALLY == 1
-    //Break ties favoring 0th skew.
+    //Break ties favoring Skew-0.
     index = index1;
 #endif
      
   } else {
     assert(0);
   }
-      
+
+  //Increments count for Bucket where Ball Inserted 
   retval = bucket[index];
   bucket[index]++;
 
+  //Track which bucket the new Ball was inserted in
   assert(balls[ballID] == (uns64)-1);
   balls[ballID] = index;
   
@@ -134,23 +176,29 @@ uns insert_ball(uns64 ballID){
     //Overwrite balls[ballID] with spill_index.
     spill_ball(index,ballID);   
   }
-  
+
+  // Return num-balls in bucket where new ball inserted.
   return retval;  
 }
 
 /////////////////////////////////////////////////////
+// Remove Random Ball (Global Eviction)
 /////////////////////////////////////////////////////
 
 uns64 remove_ball(void){
+  // Select Random BallID from all Balls
   uns64 ballID = mtrand->randInt(NUM_BUCKETS*BALLS_PER_BUCKET -1);
 
+  // Identify which bucket this ball is in 
   assert(balls[ballID] != (uns64)-1);
   uns64 bucket_index = balls[ballID];
-    
+
+  // Update Ball Tracking
   assert(bucket[bucket_index] != 0 );  
   bucket[bucket_index]--;
   balls[ballID] = -1;
 
+  // Return BallID removed (ID will be reused for new ball to be inserted)  
   return ballID;
 }
 
@@ -201,6 +249,7 @@ void sanity_check(void){
 }
 
 /////////////////////////////////////////////////////
+// Randomly Initialize all the Buckets with Balls (NumBuckets * BallsPerBucket) 
 /////////////////////////////////////////////////////
 
 void init_buckets(void){
@@ -227,6 +276,8 @@ void init_buckets(void){
 }
 
 /////////////////////////////////////////////////////
+// Randomly remove a ball and
+// then insert a new ball with Power-of-Choices Install
 /////////////////////////////////////////////////////
 
 uns  remove_and_insert(void){
@@ -258,15 +309,17 @@ int main(int argc, char* argv[]){
   assert((argc == 4) && "Need 3 arguments: (EXTRA_BUCKET_CAPACITY:[0-8] BN_BALL_THROWS:[1-10^5] SEED:[1-400])");
   SPILL_THRESHOLD = atoi(argv[1]);
   NUM_BILLION_TRIES  = atoi(argv[2]);
-  uns myseed = atoi(argv[3]);
+  myseed = atoi(argv[3]);
 
   printf("Running simulation with SPILL_THRESHOLD:%d, NUM_TRIES:%d Billion, Seed:%d\n\n",SPILL_THRESHOLD,NUM_BILLION_TRIES,myseed);
   
   uns64 ii;
   mtrand->seed(myseed);
 
+  //Initialize Buckets
   init_buckets();
-  
+
+  //Ensure Total Balls in Buckets is Conserved.
   sanity_check();
 
   printf("Starting --  (Dot printed every 100M Ball throws) \n");
@@ -281,10 +334,10 @@ int main(int argc, char* argv[]){
         remove_and_insert();      
       }
       printf(".");fflush(stdout);
-    }
-    //Ensure number of total balls in all the buckets is constant.
+    }    
+    //Ensure Total Balls in Buckets is Conserved.
     sanity_check();
-    //Print billion count.
+    //Print count of Balls Thrown.
     printf(" %dBn\n",bn_i+1);fflush(stdout);    
   }
 
