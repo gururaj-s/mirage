@@ -12,6 +12,8 @@ int SPILL_THRESHOLD = 13;
 int NUM_BILLION_TRIES = 1;
 
 #define BILLION_TRIES             (1000*1000*1000)
+#define HUNDRED_MILLION_TRIES     (100*1000*1000)
+
 #define NUM_SKEWS                      (2)
 #define BASE_WAYS_PER_SKEW             (8)
 
@@ -253,7 +255,7 @@ uns  remove_and_insert(void){
 int main(int argc, char* argv[]){
 
   //Get arguments:
-  assert((argc == 4) && "Need 3 arguments: (SPILL_THRESHOLD:[12-14] NUM_BILLION_TRIES:[1-10^5] SEED:[1-400])");
+  assert((argc == 4) && "Need 3 arguments: (EXTRA_BUCKET_CAPACITY:[0-8] BN_BALL_THROWS:[1-10^5] SEED:[1-400])");
   SPILL_THRESHOLD = atoi(argv[1]);
   NUM_BILLION_TRIES  = atoi(argv[2]);
   uns myseed = atoi(argv[3]);
@@ -267,17 +269,23 @@ int main(int argc, char* argv[]){
   
   sanity_check();
 
-  printf("Starting ...\n");
+  printf("Starting --  (Dot printed every 100M Ball throws) \n");
 
-  for (uns64 bn_i=0 ; bn_i < NUM_BILLION_TRIES; bn_i++) {
-    for(ii=0; ii<BILLION_TRIES; ii++){
-      remove_and_insert();      
+  //N Billion Ball Throws
+  for (uns64 bn_i=0 ; bn_i < NUM_BILLION_TRIES; bn_i++) {    
+    //1 Billion Ball Throws
+    for(uns64 hundred_mn_count=0; hundred_mn_count<10; hundred_mn_count++){
+      //In multiples of 100 Million Ball Throws.
+      for(ii=0; ii<HUNDRED_MILLION_TRIES; ii++){
+        //Insert and Remove Ball
+        remove_and_insert();      
+      }
+      printf(".");fflush(stdout);
     }
-    printf(".");fflush(stdout);
+    //Ensure number of total balls in all the buckets is constant.
     sanity_check();
-    if(bn_i%10 == 9){
-      printf(" %dBn\n",bn_i+1);fflush(stdout);
-    }   
+    //Print billion count.
+    printf(" %dBn\n",bn_i+1);fflush(stdout);    
   }
 
   printf("\n\nBucket-Fill Snapshot at End\n");
