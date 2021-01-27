@@ -1,5 +1,5 @@
 ## MIRAGE: Mitigating Conflict-Based Cache Attacks with a Practical Fully-Associative Design  
-0;95;0cAuthors: Gururaj Saileshwar and Moinuddin Qureshi, Georgia Institute of Technollgy.  
+Authors: Gururaj Saileshwar and Moinuddin Qureshi, Georgia Institute of Technollgy.  
 Appears in USENIX Security 2021.   
 
 ### Citation
