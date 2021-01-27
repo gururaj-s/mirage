@@ -30,7 +30,7 @@ Here you can recreate all the Security-Analysis related tables and graphs: *Fig-
   - Sensitivity experiments: `cd results/sensitivity; ./run_sensitivity.sh`.
       * This will run the evaluations for 8-Way and 32-Way LLC (4 and 16 Base-Ways-Per-Skews).
       * Only  10 Billion Ball Throws are simulated in these experiements.
-- **Visualize the results:** `jupyter notebook visualize_results.ipynb`. This will plot the following:
+- **Visualize the results:** `jupyter notebook results/visualize_results.ipynb`. This will plot the following:
   - Fig-7: Bucket-Spill-Frequency as Bucket-Capacity (Ways-Per-Skew) changes. This is directly from the results of the simulations.
   - Fig-9,Fig-10: Empirical and Analytical Bucket-Probabilities and Bucket-Spill-Frequency. The Empirical results are directly from the simulations. The Analytical values are calculated using the Bucket-Probability(0) from the experiments, in the Equations in Section-4.3 and 4.4 in the paper.
   - Table-1: Is directly taken from Fig-10.
