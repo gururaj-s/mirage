@@ -6,6 +6,8 @@
 
 # Result files
 *.out
+*.stat
+*.pdf
 
 #TODO
 todo
