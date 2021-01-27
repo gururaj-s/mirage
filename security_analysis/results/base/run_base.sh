@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-## Command Line Arguments
+0;95;0c## Command Line Arguments
 NUM_BILLION_BALLS_PER_EXP=${1:-100} # $1
 NUM_EXP=${2:-1}               # $2
 NUM_BILLIONS=$(($NUM_BILLION_BALLS_PER_EXP * $NUM_EXP))
@@ -31,3 +31,6 @@ done
 
 ## Generate the Spills Result (Fig-7)
 ./get_spills.sh
+
+## Generate the Bucket Probabilities Result (Fig-9, Fig-10)
+./get_bucket_prob.sh

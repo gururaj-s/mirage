@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 #Header
 echo "ExtraWaysPerSkew Trials Spills Trials/Spill" > Base8.Spills.stat;
 
