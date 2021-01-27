@@ -315,9 +315,9 @@ int main(int argc, char* argv[]){
   NUM_BILLION_TRIES  = atoi(argv[2]);
   myseed = atoi(argv[3]);
 
-  printf("Cache Configuration: %d MB, %d skews, %d ways (%d ways/skew)\n",CACHE_SZ_BYTES/1024/1024,NUM_SKEWS,BASE_WAYS_PER_SKEW);
+  printf("Cache Configuration: %d MB, %d skews, %d ways (%d ways/skew)\n",CACHE_SZ_BYTES/1024/1024,NUM_SKEWS,NUM_SKEWS*BASE_WAYS_PER_SKEW,BASE_WAYS_PER_SKEW);
   printf("AVG-BALLS-PER-BUCKET:%d, BUCKET-SPILL-THRESHOLD:%d \n",BASE_WAYS_PER_SKEW,SPILL_THRESHOLD);
-  printf("Simulation Parameters - BALL_THROWS:%d Billion, SEED:%d\n\n",NUM_BILLION_TRIES,myseed);
+  printf("Simulation Parameters - BALL_THROWS:%llu, SEED:%d\n\n",(unsigned long long)NUM_BILLION_TRIES*(unsigned long long)BILLION_TRIES,myseed);
   
   uns64 ii;
   mtrand->seed(myseed);
