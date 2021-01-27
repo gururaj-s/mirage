@@ -35,6 +35,7 @@ Here you can recreate all the Security-Analysis related tables and graphs: *Fig-
   - Fig-9,Fig-10: Empirical and Analytical Bucket-Probabilities and Bucket-Spill-Frequency. The Empirical results are directly from the simulations. The Analytical values are calculated using the Bucket-Probability(0) from the experiments, in the Equations in Section-4.3 and 4.4 in the paper.
   - Table-1: Is directly taken from Fig-10.
   - Table-4: Bucket-Spill-Frequency as LLC-Associativity varies. This uses similar analysis as Fig-10, except the values are used from the sensitivity experiments.
+  - (*Note: Results may not identically match the paper results as only 10-Billion Cache-Fill simulations are performed, while the paper had 10 Trillion Cache-Fills. However the results should be in same order of magnitude as the paper-results.)*
       
   
 
