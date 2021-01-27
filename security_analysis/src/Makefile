@@ -20,9 +20,10 @@ WaysPerSkew_8 : bucketsNballs_kExtraWays_NBn.cpp mtrand.h
 	$(CC) $(CFLAGS) bucketsNballs_kExtraWays_NBn.cpp -o ../bin/mirage8WPS_kExtraWays_NBn.o 
 
 WaysPerSkew_16 : bucketsNballs_kExtraWays_NBn.cpp mtrand.h
-
+	$(CC) $(CFLAGS) -DCUSTOM_BASE_WAYS_PER_SKEW=16  -DCUSTOM_MAX_FILL=32  bucketsNballs_kExtraWays_NBn.cpp -o ../bin/mirage16WPS_kExtraWays_NBn.o 
 
 WaysPerSkew_4 : bucketsNballs_kExtraWays_NBn.cpp mtrand.h
+	$(CC) $(CFLAGS) -DCUSTOM_BASE_WAYS_PER_SKEW=4  bucketsNballs_kExtraWays_NBn.cpp -o ../bin/mirage4WPS_kExtraWays_NBn.o 
 
 clean:
 	rm -rf bin/*.o ; 

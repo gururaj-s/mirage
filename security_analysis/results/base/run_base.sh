@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-0;95;0c## Command Line Arguments
+## Command Line Arguments
 NUM_BILLION_BALLS_PER_EXP=${1:-100} # $1
 NUM_EXP=${2:-1}               # $2
 NUM_BILLIONS=$(($NUM_BILLION_BALLS_PER_EXP * $NUM_EXP))

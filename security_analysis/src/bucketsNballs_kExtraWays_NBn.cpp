@@ -22,9 +22,14 @@ unsigned int myseed = 1;
 // DEFINES
 /////////////////////////////////////////////////////
 //Cache Configuration
-//16 Way LLC
+//Default: 16 Way LLC
+#ifndef CUSTOM_BASE_WAYS_PER_SKEW
 #define BASE_WAYS_PER_SKEW        (8)
+#else
+#define BASE_WAYS_PER_SKEW        (CUSTOM_BASE_WAYS_PER_SKEW)
+#endif
 #define NUM_SKEWS                 (2)
+
 //16MB LLC
 #define CACHE_SZ_BYTES            (16*1024*1024) 
 #define LINE_SZ_BYTES             (64)
@@ -32,8 +37,12 @@ unsigned int myseed = 1;
 #define NUM_BUCKETS_PER_SKEW      (NUM_BUCKETS/NUM_SKEWS)
 
 //Bucket Capacities
-#define BALLS_PER_BUCKET      (8)
+#define BALLS_PER_BUCKET      (BASE_WAYS_PER_SKEW)
+#ifndef CUSTOM_MAX_FILL
 #define MAX_FILL              (16)
+#else
+#define MAX_FILL              (CUSTOM_MAX_FILL)
+#endif
 int SPILL_THRESHOLD = BALLS_PER_BUCKET + EXTRA_BUCKET_CAPACITY;
 
 // Tie-Breaking Policy between Skews on Ball-Throws
