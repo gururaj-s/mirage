@@ -21,8 +21,8 @@ The artifact covers two aspects of results from the paper:
 
 ### Steps for Security Evaluation  
 Here you can recreate all the Security-Analysis related tables and graphs: *Fig-7, Table-1, Fig-9, Fig-10, Table-4*, by following these instructions::  
-- Compile the binaries: `cd security_analysis ; make all`  
-- Run the experiments: `./run_exp.sh` . This will automatically run two scripts to execute two sets of experiments:
+- **Compile the binaries:** `cd security_analysis ; make all`  
+- **Run the experiments:** `./run_exp.sh` . This will automatically run two scripts to execute two sets of experiments:
   - Base experiments: `cd results/base; ./run_base.sh`.
       * This will run the default base configuration of 16-Way LLC, i.e. 8 Base-Ways-Per-Skews
       * This will spawn 6 parallel experiments for Extra-Ways-per-Skew = 1 to 6.  (if your system cannot support 6 threads, please modify `./run_base.sh`).
@@ -30,9 +30,9 @@ Here you can recreate all the Security-Analysis related tables and graphs: *Fig-
   - Sensitivity experiments: `cd results/sensitivity; ./run_sensitivity.sh`.
       * This will run the evaluations for 8-Way and 32-Way LLC (4 and 16 Base-Ways-Per-Skews).
       * Only  10 Billion Ball Throws are simulated in these experiements.
-- Visualize the results: `jupyter notebook visualize_results.ipynb`. This will plot the following:
+- **Visualize the results:** `jupyter notebook visualize_results.ipynb`. This will plot the following:
   - Fig-7: Bucket-Spill-Frequency as Bucket-Capacity (Ways-Per-Skew) changes. This is directly from the results of the simulations.
-  - Fig-9,Fig-10: Empirical and Analytical Bucket-Probabilities and Bucket-Spill-Frequency. The Empirical results are directly from the simulations. The Analytical values are calculated by using the Bucket-Probability(0) value from the experiments in the formulate developed in Section-4.3 and 4.4 from the paper.
+  - Fig-9,Fig-10: Empirical and Analytical Bucket-Probabilities and Bucket-Spill-Frequency. The Empirical results are directly from the simulations. The Analytical values are calculated using the Bucket-Probability(0) from the experiments, in the Equations in Section-4.3 and 4.4 in the paper.
   - Table-1: Is directly taken from Fig-10.
   - Table-4: Bucket-Spill-Frequency as LLC-Associativity varies. This uses similar analysis as Fig-10, except the values are used from the sensitivity experiments.
       
@@ -48,20 +48,19 @@ Here you can recreate all the Security-Analysis related tables and graphs: *Fig-
 
 ### Steps for Gem5 Evaluation
 Here you will recreate results in Appendix-B: *Table-11*, by executing the following steps:
-- Compile Gem5: `cd perf_analysis/gem5 ; scons -j50 build/X86/gem5.opt`
-- Set paths in `scripts/env.sh`. You will set the `GEM5_PATH`:path to curr directory, `SPEC_PATH`: path to your SPECCPU2006 installation, `CKPT_PATH`: path where the checkpoints will be created next.  
-- Source the paths: `source scripts/env.sh`.
-- Create Checkpoints: `cd scripts ; ./ckptscript.sh <BMARK>`. This will forward the execution to a point of interest and then checkpoint the archiectural state (e.g. registers, memory) and save it for each benchmark. Subsequently, when each configuration is run, the checkpoint will be reloaded.
+- **Compile Gem5:** `cd perf_analysis/gem5 ; scons -j50 build/X86/gem5.opt`
+- **Set {aths** in `scripts/env.sh`. You will set the `GEM5_PATH`:path to curr directory, `SPEC_PATH`: path to your SPECCPU2006 installation, `CKPT_PATH`: path where the checkpoints will be created next. Please source the paths as: `source scripts/env.sh`.
+- **Create Checkpoints:** `cd scripts ; ./ckptscript.sh <BMARK>`. This will forward the execution to a point of interest and then checkpoint the archiectural state (e.g. registers, memory) and save it for each benchmark. Subsequently, when each configuration is run, the checkpoint will be reloaded.
   - It is advised to create a checkpoint after 10 Billion instructions (the program is likely to have completed the initialization phase). This can take a 2-3 hours for each benchmark. You can checkpoint multiple benchmarks in parallel, by using nohup to run multiple of these scripts at a time.  
   - As a test, you can create a short checkpoint after 100,000 instructions (uncomment lines after `#SHORT` in `ckptscript.sh`).
   - Please see `../configs/example/spec06_config.py` for list of benchmark names.
-- Run the experiments, once all the checkpoints are created: `cd scripts ; ./runscript.sh <BMARK> <RUN-NAME> <SCHEME>`.
+- **Run the experiments**, once all the checkpoints are created: `cd scripts ; ./runscript.sh <BMARK> <RUN-NAME> <SCHEME>`.
   - The arguments are as follows:
       * RUN-NAME: Any string that will be used to identify this run, and the name for the results-folder of this run.
       * SCHEME: [Baseline, scatter-cache, skew-vway-rand]. (skew-vway-rand is essentially MIRAGE).
   - We recommend running each program for 500 million instructions or more. This should take 3-4 hours per program, per scheme. You can run multiple benchmarks and multiple schemes in parallel, by using nohup to run multiple of these scripts at a time.
   - As a test, you can run it for 5 million instruction (uncomment lines after `#RUN_SHORT` in `runscript.sh`.  
-- Visualize the results: `cd scripts; stats_scripts; ./data_perf.sh`. This will compare the noarmlized cycles per instruction (CPI) for each configuration.
+- **Visualize the results:** `cd scripts; stats_scripts; ./data_perf.sh`. This will compare the noarmlized cycles per instruction (CPI) for each configuration.
   - You will need to modify the `data_perf.sh` to provide the paths of the results folder for each of the schemes you run.
   - Other scripts are also available in the folder to collect the LLC misses-per-thousand-instructions (MPKI) for each of the schemes.
  
