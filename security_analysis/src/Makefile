@@ -11,13 +11,13 @@ CC=g++
 CFLAGS=-std=c++0x -O3 
 
 create_folder:
-	mkdir -p  bin
+	mkdir -p  ../bin
 
 #-------------------------
 # BINARIES
 #-------------------------
 WaysPerSkew_8 : bucketsNballs_kExtraWays_NBn.cpp mtrand.h
-	$(CC) $(CFLAGS) bucketsNballs_kExtraWays_NBn.cpp -o bin/mirage8WPS_kExtraWays_NBn.o 
+	$(CC) $(CFLAGS) bucketsNballs_kExtraWays_NBn.cpp -o ../bin/mirage8WPS_kExtraWays_NBn.o 
 
 WaysPerSkew_16 : bucketsNballs_kExtraWays_NBn.cpp mtrand.h
 
