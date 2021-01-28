@@ -1,5 +1,5 @@
 ## MIRAGE: Mitigating Conflict-Based Cache Attacks with a Practical Fully-Associative Design  
-Authors: Gururaj Saileshwar and Moinuddin Qureshi, Georgia Institute of Technollgy.  
+0;95;0cAuthors: Gururaj Saileshwar and Moinuddin Qureshi, Georgia Institute of Technollgy.  
 Appears in USENIX Security 2021.   
 
 ### Citation
@@ -26,7 +26,7 @@ Here you can recreate all the Security-Analysis related tables and graphs: *Fig-
   - Base experiments: `cd results/base; ./run_base.sh`.
       * This will run the default base configuration of 16-Way LLC, i.e. 8 Base-Ways-Per-Skews
       * This will spawn 6 parallel experiments for Extra-Ways-per-Skew = 1 to 6.  (if your system cannot support 6 threads, please modify `./run_base.sh`).
-      * Each experiment defaults to 10 Billion Ball Throws (default for the artifact evaluation). This can be controlled with arguments as `./run_base.sh <NUM_BILLION_THROWS> <NUM_EXP>`, to execute NUM_BILLION_THROWS x NUM_EXP` ball throws. We used 500 Billion x 20 to simulate 10 Trillion Ball throws for the paper, but using 10 Billion provides same order of magnitude bounds.
+      * Each experiment defaults to 10 Billion Ball Throws (default for the artifact evaluation). This can be controlled with arguments as `./run_base.sh <NUM_BILLION_THROWS> <NUM_EXP>`, to execute NUM_BILLION_THROWS x NUM_EXP` ball throws. We used 500 Billion x 20 to simulate 10 Trillion Ball throws for the paper, but using 10 Billion provides results in similar order of magnitudes.
   - Sensitivity experiments: `cd results/sensitivity; ./run_sensitivity.sh`.
       * This will run the evaluations for 8-Way and 32-Way LLC (4 and 16 Base-Ways-Per-Skews).
       * Only  10 Billion Ball Throws are simulated in these experiements.
@@ -35,7 +35,7 @@ Here you can recreate all the Security-Analysis related tables and graphs: *Fig-
   - Fig-9,Fig-10: Empirical and Analytical Bucket-Probabilities and Bucket-Spill-Frequency. The Empirical results are directly from the simulations. The Analytical values are calculated using the Bucket-Probability(0) from the experiments, in the Equations in Section-4.3 and 4.4 in the paper.
   - Table-1: Is directly taken from Fig-10.
   - Table-4: Bucket-Spill-Frequency as LLC-Associativity varies. This uses similar analysis as Fig-10, except the values are used from the sensitivity experiments.
-  - (*Note: Results may not identically match the paper results as only 10-Billion Cache-Fill simulations are performed, while the paper had 10 Trillion Cache-Fills. However the results should be in same order of magnitude as the paper-results.)*
+  - (*Note: Results may not identically match the paper results as only 10-Billion Cache-Fill simulations are performed, while the paper had 10 Trillion Cache-Fills. However the results should be in similar order of magnitude as the paper-results.)*
       
   
 
