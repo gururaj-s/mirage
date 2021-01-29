@@ -40,7 +40,9 @@ Here you can recreate all the Security-Analysis related tables and graphs: *Fig-
   
 
 ### Requirements For Performance Evaluations in Gem5 CPU Simulator:
-   - **SW Dependencies:** Gem5 Dependencies - g++, Python-2.7, scons-3, SWIG, zlib, m4.   
+   - **SW Dependencies:** Gem5 Dependencies - gcc, Python-2.7, scons-3.
+     - Tested with gcc-6.4.0 and scons 3.1.2.
+     - Scons-3.1.2 download [link](https://sourceforge.net/projects/scons/files/scons/3.1.2/scons-3.1.2.tar.gz/download). To install, `tar -zxvf scons-3.1.2.tar.gz` and `cd scons-3.1.2; python setup.py install` (use --prefix=<PATH> for local install).
    - **Benchmark Dependencies:** [SPEC-2006](https://www.spec.org/cpu2006/) Installed.
    - **HW Dependencies:** 
      - A 30 CPU Core or more system, to finish experiments in 12-24 hours. 
