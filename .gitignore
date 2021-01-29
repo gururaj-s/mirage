@@ -1,5 +1,8 @@
 # Emacs Files
-0;95;0c*~
+*~
+
+# Build Directory.
+*gem5/build/*
 
 # Binary Files
 *.o

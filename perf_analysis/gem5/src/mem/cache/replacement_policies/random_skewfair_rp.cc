@@ -92,7 +92,11 @@ RandomSkewfairRP::getVictim(const ReplacementCandidates& candidates) const
   // }
 
   // Visit all skews to see how many invalid entries present in each skew.
-  int invalid_per_skew[numSkews] = {0};
+  int invalid_per_skew[numSkews];
+  for (int i=0; i<numSkews; i++){
+    invalid_per_skew[i] = 0;
+  }
+
     
   for (const auto& candidate : candidates) {
     if (!std::static_pointer_cast<RandomReplData>
