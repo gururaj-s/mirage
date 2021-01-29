@@ -52,7 +52,11 @@ Here you can recreate all the Security-Analysis related tables and graphs: *Fig-
 ### Steps for Gem5 Evaluation
 Here you will recreate results in Appendix-B: *Table-11*, by executing the following steps:
 - **Compile Gem5:** `cd perf_analysis/gem5 ; scons -j50 build/X86/gem5.opt`
-- **Set Paths** in `scripts/env.sh`. You will set the `GEM5_PATH`:path to curr directory, `SPEC_PATH`: path to your SPECCPU2006 installation, `CKPT_PATH`: path where the checkpoints will be created next. Please source the paths as: `source scripts/env.sh`.
+- **Set Paths** in `scripts/env.sh`. You will set the following :
+    - `GEM5_PATH`: the full path of the gem5 directory (current directory).
+    - `SPEC_PATH`: the path to your SPEC-CPU2006 installation. 
+    - `CKPT_PATH`: the path to a new folder where the checkpoints will be created next. 
+    - Please source the paths as: `source scripts/env.sh` after modifying the file.
 - **Create Checkpoints:** `cd scripts ; ./ckptscript.sh <BMARK>`. This will forward the execution to a point of interest and then checkpoint the archiectural state (e.g. registers, memory) and save it for each benchmark. Subsequently, when each configuration is run, the checkpoint will be reloaded.
   - It is advised to create a checkpoint after 10 Billion instructions (the program is likely to have completed the initialization phase). This can take a 2-3 hours for each benchmark. You can checkpoint multiple benchmarks in parallel, by using nohup to run multiple of these scripts at a time.  
   - As a test, you can create a short checkpoint after 100,000 instructions (uncomment lines after `#SHORT` in `ckptscript.sh`).
