@@ -22,7 +22,7 @@ The artifact covers two aspects of results from the paper:
 ### Steps for Security Evaluation  
 Here you can recreate all the Security-Analysis related tables and graphs: *Fig-7, Table-1, Fig-9, Fig-10, Table-4*, by following these instructions::  
 - **Compile the binaries:** `cd security_analysis ; make all`  
-- **Run the experiments:** `./run_exp.sh` . This will automatically run two scripts to execute two sets of experiments:
+- **Run the experiments:** `./run_exp.sh` . This will run following scripts for all experiments:
   - Base experiments: `cd results/base; ./run_base.sh`.
       * This will run the default base configuration of 16-Way LLC, i.e. 8 Base-Ways-Per-Skews
       * This will spawn 6 parallel experiments for Extra-Ways-per-Skew = 1 to 6.  (if your system cannot support 6 threads, please modify `./run_base.sh`).
