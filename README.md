@@ -70,7 +70,7 @@ Here you will recreate results in Appendix-B: *Table-11*, by executing the follo
       * The arguments for `runscript.sh` are as follows:
         -  RUN-NAME: Any string that will be used to identify this run, and the name for the results-folder of this run.
         -  SCHEME: [Baseline, scatter-cache, skew-vway-rand]. (skew-vway-rand is essentially MIRAGE).
-      * Each program is simulated for 500 million instructions. This should take 3-4 hours per program, per scheme. All 15 benchmarks are run in parallel, and after one scheme finished next scheme is run.
+      * Each program is simulated for 500 million instructions. This should take 1 hour per benchmark, per scheme. All 15 benchmarks are run in parallel, and after one scheme finishes, the next scheme is run.
     - **Visualize the results:** `cd stats_scripts; ./data_perf.sh`. This will compare the normalized cycles per instruction (CPI) for each configuration.
       * The slowdown in peformance results will be stored in `stats_scripts/data/perf.stat`. 
       * Script to collect the LLC misses-per-thousand-instructions (MPKI) for each of the schemes is also available in `stats_scripts/data_mpki.sh`.
