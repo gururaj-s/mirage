@@ -1,8 +1,10 @@
 # Emacs Files
 *~
 
-# Build Directory.
+# Gem5 Directories
 *gem5/build/*
+*GEM5_CKPT/*
+*gem5/output/*
 
 # Binary Files
 *.o

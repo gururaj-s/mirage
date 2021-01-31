@@ -42,10 +42,9 @@ else
     SCHEME="Baseline"                      # Decides the scheme being simulated
 fi
 
-MAX_INSTS=500000000
-CHECKPOINT_CONFIG="ooo_4Gmem_10Bn"     
-INST_TAKE_CHECKPOINT=10000000000      
-
+MAX_INSTS=500000                      # Number of instructions to be simulated
+CHECKPOINT_CONFIG="ooo_4Gmem_100K"    # Name of directory inside CKPT_PATH
+INST_TAKE_CHECKPOINT=100000           # Instruction count after which checkpoint was taken
 
 ############ DIRECTORY PATHS TO BE EXPORTED #############
 

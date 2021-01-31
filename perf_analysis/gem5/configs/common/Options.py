@@ -478,7 +478,7 @@ def addFSOptions(parser):
 # Add options for Mirage
 def addMirageOptions(parser):
     parser.add_option("--mirage_mode", action="store", type="string", default="Baseline",
-                      help="[Baseline,scatter-cache,vway-rand,skew-vway-rand,p2-skew-vway-rand,p2cuckoo-skew-vway-rand]")
+                      help="[Baseline,BaselineRRIP,scatter-cache,skew-vway-rand]")
     parser.add_option("--l2_numSkews", type="int", default=1)
     parser.add_option("--l2_TDR", type="float", default=1.5)
 

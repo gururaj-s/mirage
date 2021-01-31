@@ -45,8 +45,8 @@ Here you can recreate all the Security-Analysis related tables and graphs: *Fig-
      - Scons-3.1.2 download [link](https://sourceforge.net/projects/scons/files/scons/3.1.2/scons-3.1.2.tar.gz/download). To install, `tar -zxvf scons-3.1.2.tar.gz` and `cd scons-3.1.2; python setup.py install` (use `--prefix=<PATH>` for local install).
    - **Benchmark Dependencies:** [SPEC-2006](https://www.spec.org/cpu2006/) Installed.
    - **HW Dependencies:** 
-     - A 30 CPU Core or more system, to finish experiments in 12-24 hours. 
-     - A 8 CPU Core system may require approximately 3-5 days.
+     - A 15 CPU Core or more system, to finish experiments in ~6 hours. 
+     - A 4 CPU Core system may require approximately 1 - 1.5 days.
 
 
 ### Steps for Gem5 Evaluation
@@ -55,19 +55,23 @@ Here you will recreate results in Appendix-B: *Table-11*, by executing the follo
 - **Set Paths** in `scripts/env.sh`. You will set the following :
     - `GEM5_PATH`: the full path of the gem5 directory (current directory).
     - `SPEC_PATH`: the path to your SPEC-CPU2006 installation. 
-    - `CKPT_PATH`: the path to a new folder where the checkpoints will be created next. 
+    - `CKPT_PATH`: the path to a new folder where the checkpoints will be created next.
     - Please source the paths as: `source scripts/env.sh` after modifying the file.
-- **Create Checkpoints:** `cd scripts ; ./ckptscript.sh <BMARK>`. This will forward the execution to a point of interest and then checkpoint the archiectural state (e.g. registers, memory) and save it for each benchmark. Subsequently, when each configuration is run, the checkpoint will be reloaded.
-  - It is advised to create a checkpoint after 10 Billion instructions (the program is likely to have completed the initialization phase). This can take a 2-3 hours for each benchmark. You can checkpoint multiple benchmarks in parallel, by using nohup to run multiple of these scripts at a time.  
-  - As a test, you can create a short checkpoint after 100,000 instructions (uncomment lines after `#SHORT` in `ckptscript.sh`).
-  - Please see `../configs/example/spec06_config.py` for list of benchmark names.
-- **Run the experiments**, once all the checkpoints are created: `cd scripts ; ./runscript.sh <BMARK> <RUN-NAME> <SCHEME>`.
-  - The arguments are as follows:
-      * RUN-NAME: Any string that will be used to identify this run, and the name for the results-folder of this run.
-      * SCHEME: [Baseline, scatter-cache, skew-vway-rand]. (skew-vway-rand is essentially MIRAGE).
-  - We recommend running each program for 500 million instructions or more. This should take 3-4 hours per program, per scheme. You can run multiple benchmarks and multiple schemes in parallel, by using nohup to run multiple of these scripts at a time.
-  - As a test, you can run it for 5 million instruction (uncomment lines after `#RUN_SHORT` in `runscript.sh`.  
-- **Visualize the results:** `cd scripts; stats_scripts; ./data_perf.sh`. This will compare the noarmlized cycles per instruction (CPI) for each configuration.
-  - You will need to modify the `data_perf.sh` to provide the paths of the results folder for each of the schemes you run.
-  - Other scripts are also available in the folder to collect the LLC misses-per-thousand-instructions (MPKI) for each of the schemes.
+- **Test Creating and Running Checkpoints:** For each program the we need to create a checkpoint of the program state after the initialization phase of the program is complete, which will be used to run the simulations with different hardware configurations. 
+    - To test the checkpointing process, run `cd scripts; ./ckptscript_test.sh ; ./runscript_test.sh`: this will create a checkpoint after 100K instructions and run the baseline design for 500K instructions from the checkpoint. 
+    - To test if the run is successfully complete, check `less ../gem5/output/ooo_4Gmem_100K/Test/Baseline/perlbench/runscript.log`. The last line should have `Exiting .. because a thread reached the max instruction count`.
+- **Create and Run Checkpoints:** For all the benchmarks, run `./run_all_exp.sh`. This will run the following steps:
+    - **Create Checkpoint:** For each benchmark, the checkpoints will be created using `./ckptscript.sh <BMARK>`. 
+      * By default, the `ckptscript.sh` is run for 15 programs in parallel (please modify run_all_exp.sh if your system cannot support 15 parallel threads).
+      * For each program, the execution is forwarded by 10 Billion Instructions (by when the initialization of the program should have completed) and then the architectural state (e.g. registers, memory) is checkpointed. Subsequently, when each HW-config is simulated, these checkpoints will be reloaded.
+      * This process can take a 2-3 hours for each benchmark. Hence, all the benchmarks are run in parallel by default.
+      * Please see `../configs/example/spec06_config.py` for list of benchmarks supported.
+    - **Run the experiments**: Once all the checkpoints are created, the experiments will be run using `./runscript.sh <BMARK> <RUN-NAME> <SCHEME>`, where each HW config is simulated for each benchmark.
+      * The arguments for `runscript.sh` are as follows:
+        -  RUN-NAME: Any string that will be used to identify this run, and the name for the results-folder of this run.
+        -  SCHEME: [Baseline, scatter-cache, skew-vway-rand]. (skew-vway-rand is essentially MIRAGE).
+      * Each program is simulated for 500 million instructions. This should take 3-4 hours per program, per scheme. All 15 benchmarks are run in parallel, and after one scheme finished next scheme is run.
+    - **Visualize the results:** `cd stats_scripts; ./data_perf.sh`. This will compare the normalized cycles per instruction (CPI) for each configuration.
+      * The slowdown in peformance results will be stored in `stats_scripts/data/perf.stat`. 
+      * Script to collect the LLC misses-per-thousand-instructions (MPKI) for each of the schemes is also available in `stats_scripts/data_mpki.sh`.
  

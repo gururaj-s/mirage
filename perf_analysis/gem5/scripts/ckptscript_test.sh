@@ -1,51 +1,36 @@
 #!/bin/bash
-
 ############ NOTE: This script sets up the following variables and then runs the command below ############
 
 # **(modify these as needed)**
 # OUTPUT_DIR: Where the results will be written
 # GEM5_PATH: path for current cleanupspec directory
 # BENCHMARK: name of the benchmark being run
-# CKPT_OUT_DIR: directory in which Checkpoint being restored for current benchmark
-# INST_TAKE_CHECKPOINT: instruction at which to restore checkpoint
-# SCHEME: Scheme name to simulate (Baseline, BaselineRRIP, scatter-cache, skew-vway-rand i.e. MIRAGE)
-# MAX_INSTS: Number of instructions to simulate
+# CKPT_OUT_DIR: directory in which Checkpoint is to be written
+# INST_TAKE_CHECKPOINT: instruction at which checkpoint is to be taken
+# MAX_INSTS: Number of instructions to simulate (ckpt-inst + 1)
 # SCRIPT_OUT: Log file
 
 #$GEM5_PATH/build/X86/gem5.opt \
-#    --outdir=$OUTPUT_DIR  $GEM5_PATH/configs/example/spec06_config.py \
+#    --outdir=$OUTPUT_DIR $GEM5_PATH/configs/example/spec06_config.py \
 #    --benchmark=$BENCHMARK --benchmark_stdout=$OUTPUT_DIR/$BENCHMARK.out \
 #    --benchmark_stderr=$OUTPUT_DIR/$BENCHMARK.err \
-#    --num-cpus=1 --mem-size=4GB --mem-type=DDR4_2400_8x8 \
+#    --num-cpus=1 --mem-size=4GB \
 #    --checkpoint-dir=$CKPT_OUT_DIR \
-#    --checkpoint-restore=$INST_TAKE_CHECKPOINT --at-instruction \
-#    --cpu-type TimingSimpleCPU \
-#    --caches --l2cache --num-l2caches=1 \
-#    --l1d_size=32kB --l1i_size=32kB --l2_size=2MB \
-#    --l1d_assoc=8  --l1i_assoc=8 --l2_assoc=16 \
-#    --mirage_mode=$SCHEME --l2_numSkews=2 --l2_TDR=2 \
+#    --take-checkpoint=$INST_TAKE_CHECKPOINT --at-instruction \
+#    --mem-type=SimpleMemory \
 #    --maxinsts=$MAX_INSTS  \
 #    --prog-interval=0.003MHz \
 #    >> $SCRIPT_OUT 2>&1 &
 
-######################### CONFIG OPTIONS #########################################
-# To be modified as required
-if [ $# -gt 2 ]; then
-    BENCHMARK=$1  #select benchmark
-    RUN_CONFIG=$2 #specify output folder name
-    SCHEME=$3     #specify scheme [Baseline,BaselineRRIP,scatter-cache,skew-vway-rand]
-else
-    echo "Your command line contains <3 arguments"
-    exit
-    BENCHMARK=perlbench                    # Benchmark name, e.g. perlbench
-    RUN_CONFIG="Test"                      # Name of configuration being run (will decide output directory name)
-    SCHEME="Baseline"                      # Decides the scheme being simulated
-fi
 
-MAX_INSTS=500000000
-CHECKPOINT_CONFIG="ooo_4Gmem_10Bn"     
-INST_TAKE_CHECKPOINT=10000000000      
+############ CHECKPOINT CONFIGURATION #############
+# (Modify as needed)
+BENCHMARK=$1                    # Benchmark name, e.g. perlbench
 
+CHECKPOINT_CONFIG="ooo_4Gmem_100K"
+INST_TAKE_CHECKPOINT=100000
+
+MAX_INSTS=$((INST_TAKE_CHECKPOINT + 1)) #simulate till checkpoint instruction
 
 ############ DIRECTORY PATHS TO BE EXPORTED #############
 
@@ -106,7 +91,6 @@ SPHINX3_CODE=482.sphinx3
 XALANCBMK_CODE=483.xalancbmk
 SPECRAND_INT_CODE=998.specrand
 SPECRAND_FLOAT_CODE=999.specrand
-##################################################################
 
 #################### BENCHMARK NAME TO FOLDER NAME MAPPING ######################
 
@@ -219,9 +203,10 @@ fi
 # Ckpt Dir
 CKPT_OUT_DIR=$CKPT_PATH/$CHECKPOINT_CONFIG/$BENCHMARK-1-ref-x86
 echo "checkpoint directory: " $CKPT_OUT_DIR
+mkdir -p $CKPT_OUT_DIR
 
 # Output Dir
-OUTPUT_DIR=$GEM5_PATH/output/$CHECKPOINT_CONFIG/$RUN_CONFIG/${SCHEME}/$BENCHMARK
+OUTPUT_DIR=$GEM5_PATH/output/$CHECKPOINT_CONFIG/checkpoint_out/$BENCHMARK
 echo "output directory: " $OUTPUT_DIR
 if [ -d "$OUTPUT_DIR" ]
 then
@@ -245,35 +230,29 @@ echo "==================== Script inputs =======================" | tee -a $SCRI
 echo "BENCHMARK:                                    $BENCHMARK" | tee -a $SCRIPT_OUT
 echo "OUTPUT_DIR:                                   $OUTPUT_DIR" | tee -a $SCRIPT_OUT
 echo "==========================================================" | tee -a $SCRIPT_OUT
-##################################################################
 
 
 #################### LAUNCH GEM5 SIMULATION ######################
 echo ""
 echo "Changing to SPEC benchmark runtime directory: $RUN_DIR" | tee -a $SCRIPT_OUT
-cd $RUN_DIR
-
 echo "" | tee -a $SCRIPT_OUT
 echo "" | tee -a $SCRIPT_OUT
 echo "--------- Here goes nothing! Starting gem5! ------------" | tee -a $SCRIPT_OUT
 echo "" | tee -a $SCRIPT_OUT
 echo "" | tee -a $SCRIPT_OUT
 
+#Changing directory to run-directory
+cd $RUN_DIR
+
 # Launch Gem5:
 $GEM5_PATH/build/X86/gem5.opt \
-    --outdir=$OUTPUT_DIR \
-    $GEM5_PATH/configs/example/spec06_config.py \
-    --benchmark=$BENCHMARK \
-    --benchmark_stdout=$OUTPUT_DIR/$BENCHMARK.out \
+    --outdir=$OUTPUT_DIR $GEM5_PATH/configs/example/spec06_config.py \
+    --benchmark=$BENCHMARK --benchmark_stdout=$OUTPUT_DIR/$BENCHMARK.out \
     --benchmark_stderr=$OUTPUT_DIR/$BENCHMARK.err \
-    --num-cpus=1 --mem-size=4GB --mem-type=DDR4_2400_8x8 \
+    --num-cpus=1 --mem-size=4GB \
     --checkpoint-dir=$CKPT_OUT_DIR \
-    --checkpoint-restore=$INST_TAKE_CHECKPOINT --at-instruction \
-    --cpu-type TimingSimpleCPU \
-    --caches --l2cache --num-l2caches=1 \
-    --l1d_size=32kB --l1i_size=32kB --l2_size=2MB \
-    --l1d_assoc=8  --l1i_assoc=8 --l2_assoc=16 \
-    --mirage_mode=$SCHEME --l2_numSkews=2 --l2_TDR=2 \
+    --take-checkpoint=$INST_TAKE_CHECKPOINT --at-instruction \
+    --mem-type=SimpleMemory \
     --maxinsts=$MAX_INSTS  \
     --prog-interval=0.003MHz \
     >> $SCRIPT_OUT 2>&1 &
