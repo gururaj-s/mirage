@@ -3,8 +3,8 @@
 
 # Gem5 Directories
 *gem5/build/*
-*GEM5_CKPT/*
-*gem5/output/*
+perf_analysis/GEM5_CKPT*
+perf_analysis/gem5/output*
 
 # Binary Files
 *.o
