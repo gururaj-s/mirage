@@ -58,8 +58,8 @@ Here you will recreate results in Appendix-B: *Table-11*, by executing the follo
     - `CKPT_PATH`: the path to a new folder where the checkpoints will be created next.
     - Please source the paths as: `source scripts/env.sh` after modifying the file.
 - **Test Creating and Running Checkpoints:** For each program the we need to create a checkpoint of the program state after the initialization phase of the program is complete, which will be used to run the simulations with different hardware configurations. 
-    - To test the checkpointing process, run `cd scripts; ./ckptscript_test.sh ; ./runscript_test.sh`: this will create a checkpoint after 100K instructions and run the baseline design for 500K instructions from the checkpoint. 
-    - To test if the run is successfully complete, check `less ../gem5/output/ooo_4Gmem_100K/Test/Baseline/perlbench/runscript.log`. The last line should have `Exiting .. because a thread reached the max instruction count`.
+    - To test the checkpointing process, run `cd scripts; ./ckptscript_test.sh perlbench;`: this will create a checkpoint after 100K instructions (should complete in a couple of minutes). Once it completes, run `./runscript_test.sh perlbench Test BaselineRRIP`: this will run the baseline design for 500K instructions from the checkpoint. 
+    - To check if the run is successfully complete, check `less ../output/ooo_4Gmem_100K/Test/BaselineRRIP/perlbench/runscript.log`. The last line should have `Exiting .. because a thread reached the max instruction count`.
 - **Create and Run Checkpoints:** For all the benchmarks, run `./run_all_exp.sh`. This will run the following steps:
     - **Create Checkpoint:** For each benchmark, the checkpoints will be created using `./ckptscript.sh <BMARK>`. 
       * By default, the `ckptscript.sh` is run for 15 programs in parallel (please modify run_all_exp.sh if your system cannot support 15 parallel threads).
@@ -69,7 +69,7 @@ Here you will recreate results in Appendix-B: *Table-11*, by executing the follo
     - **Run the experiments**: Once all the checkpoints are created, the experiments will be run using `./runscript.sh <BMARK> <RUN-NAME> <SCHEME>`, where each HW config is simulated for each benchmark.
       * The arguments for `runscript.sh` are as follows:
         -  RUN-NAME: Any string that will be used to identify this run, and the name for the results-folder of this run.
-        -  SCHEME: [Baseline, scatter-cache, skew-vway-rand]. (skew-vway-rand is essentially MIRAGE).
+        -  SCHEME: [BaselineRRIP, scatter-cache, skew-vway-rand]. (skew-vway-rand is essentially MIRAGE).
       * Each program is simulated for 500 million instructions. This should take 1 hour per benchmark, per scheme. All 15 benchmarks are run in parallel, and after one scheme finishes, the next scheme is run.
     - **Visualize the results:** `cd stats_scripts; ./data_perf.sh`. This will compare the normalized cycles per instruction (CPI) for each configuration.
       * The slowdown in peformance results will be stored in `stats_scripts/data/perf.stat`. 

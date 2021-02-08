@@ -8,7 +8,7 @@
 # BENCHMARK: name of the benchmark being run
 # CKPT_OUT_DIR: directory in which Checkpoint being restored for current benchmark
 # INST_TAKE_CHECKPOINT: instruction at which to restore checkpoint
-# SCHEME: Scheme name to simulate (Baseline, BaselineRRIP, scatter-cache, skew-vway-rand i.e. MIRAGE)
+# SCHEME: Scheme name to simulate (BaselineRRIP, scatter-cache, skew-vway-rand i.e. MIRAGE)
 # MAX_INSTS: Number of instructions to simulate
 # SCRIPT_OUT: Log file
 
@@ -33,13 +33,13 @@
 if [ $# -gt 2 ]; then
     BENCHMARK=$1  #select benchmark
     RUN_CONFIG=$2 #specify output folder name
-    SCHEME=$3     #specify scheme [Baseline,BaselineRRIP,scatter-cache,skew-vway-rand]
+    SCHEME=$3     #specify scheme [BaselineRRIP,scatter-cache,skew-vway-rand]
 else
     echo "Your command line contains <3 arguments"
     exit
     BENCHMARK=perlbench                    # Benchmark name, e.g. perlbench
     RUN_CONFIG="Test"                      # Name of configuration being run (will decide output directory name)
-    SCHEME="Baseline"                      # Decides the scheme being simulated
+    SCHEME="BaselineRRIP"                      # Decides the scheme being simulated
 fi
 
 MAX_INSTS=500000000
