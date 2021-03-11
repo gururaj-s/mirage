@@ -61,6 +61,6 @@ class SkewedAssocRand(BaseIndexingPolicy):
     cxx_header = "mem/cache/tags/indexing_policies/skewed_assoc_randomized.hh"
 
     mem_size = Param.MemorySize(Parent.mem_size,"Memory capacity")
-    randomizedIndexing = Param.Bool(Parent.randomizedIndexing, "Enables Randomized Indexing with QARMA")
+    randomizedIndexing = Param.Bool(Parent.randomizedIndexing, "Enables Randomized Indexing with PRINCE")
     skewedCache = Param.Bool(Parent.skewedCache, "Enables skewed cache design")
     numSkews = Param.Unsigned(Parent.numSkews, "Number of skews")

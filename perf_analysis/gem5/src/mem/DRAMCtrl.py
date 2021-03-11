@@ -99,8 +99,10 @@ class DRAMCtrl(QoSMemCtrl):
 
     # scheduler, address map and page policy
     mem_sched_policy = Param.MemSched('frfcfs', "Memory scheduling policy")
-    addr_mapping = Param.AddrMap('RoRaBaCoCh', "Address mapping policy")
-    page_policy = Param.PageManage('open_adaptive', "Page management policy")
+    #addr_mapping = Param.AddrMap('RoRaBaCoCh', "Address mapping policy")
+    #page_policy = Param.PageManage('open_adaptive', "Page management policy")
+    addr_mapping = Param.AddrMap('RoCoRaBaCh', "Address mapping policy")
+    page_policy = Param.PageManage('close', "Page management policy")
 
     # enforce a limit on the number of accesses per row
     max_accesses_per_row = Param.Unsigned(16, "Max accesses per row before "

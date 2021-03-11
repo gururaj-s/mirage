@@ -25,13 +25,16 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Authors: Daniel Carvalho
+ * Adapted from Original Implementation of Indexing Policy by Authors: Daniel Carvalho
  */
 
 /**
  * @file
  * Definitions of a skewed associative randomized indexing policy.
  */
+
+/* Authors: Gururaj Saileshwar, Moinuddin Qureshi.
+*/
 
 #include "mem/cache/tags/indexing_policies/skewed_assoc_randomized.hh"
 
@@ -40,6 +43,7 @@
 #include "base/logging.hh"
 #include "mem/cache/replacement_policies/replaceable_entry.hh"
 #include "debug/Cache.hh"
+#include "mem/cache/tags/indexing_policies/prince_ref.hh"
 #include "mem/cache/tags/indexing_policies/qarma64.hh"
 
 SkewedAssocRand::SkewedAssocRand(const Params *p)
@@ -140,15 +144,15 @@ void SkewedAssocRand::gen_rand_table (std::vector<int64_t>  &m_ela_table,
                                       int seed_rand){
   m_ela_table.resize(0);
   m_ela_table.resize(num_lines_in_mem,-1);
-    
-  //Ensure the size of uint64 used by gem5 & QARMA is the same
-  assert(sizeof(uint64_t) == sizeof(u64));
-    
-  //Encr-Index = Index(QARMA64(PLN))
+  
+  //Ensure the size of uint64 used by gem5 & QARMA is the same (needed only if QARMA used)
+  //assert(sizeof(uint64_t) == sizeof(u64));
+  
+  //Encr-Index = Index(PRINCE64(PLN))
   //Encr-Tag   = PLN
   //PLN = Encr-Tag
   for (int64_t i=0;i <num_lines_in_mem; i++){
-    m_ela_table[i] = calcQARMA64(i,seed_rand) % num_lines_in_mem ;
+    m_ela_table[i] = calcPRINCE64(i,seed_rand) % num_lines_in_mem ;
   }
 }
 
@@ -169,3 +173,41 @@ uint64_t SkewedAssocRand::calcQARMA64(uint64_t phy_line_num,uint64_t seed){
   uint64_t enc64_hash = qarma64_enc(key,phy_line_num,tweak);
   return enc64_hash;    
 }
+
+// [Skewed Randomized Cache]: Randomized Indexing (IDF) Using PRINCE Cipher-based Hashing
+uint64_t SkewedAssocRand::calcPRINCE64(uint64_t phy_line_num,uint64_t seed){
+
+  //Variables for keys, input, output.
+  uint8_t plaintext[8];
+  uint8_t ciphertext[8];
+  uint8_t key[16];
+
+  //Key Values  
+  uint64_t k0 = 0x0011223344556677;
+  uint64_t k1 = 0x8899AABBCCDDEEFF;
+  //Add seed to keys for each skew.
+  k0 = k0 + seed;
+  k1 = k1 + seed;
+  
+  //Set up keys, plaintext
+  uint64_to_bytevec(k0,key);
+  uint64_to_bytevec(k1,key+8);
+  uint64_to_bytevec(phy_line_num,plaintext);
+
+  //TEST PLAINTEXT
+  //uint64_t test_plaintext = 0x0123456789ABCDEF; 
+  //uint64_to_bytevec(test_plaintext,plaintext);
+
+  //Prince encrypt.
+  prince_encrypt(plaintext,key,ciphertext);
+
+  //Convert output
+  uint64_t enc64_hash = bytevec_to_uint64(ciphertext);
+  
+  //PRINT TEST
+  //cprintf("PT: %llx, K0: %llx, K1 %llx, CT:%llx\n", /*test_plaintext*/phy_line_num, k0,k1,enc64_hash);
+
+  return enc64_hash;    
+}
+
+

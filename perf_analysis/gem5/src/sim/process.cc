@@ -71,6 +71,7 @@
 #include "sim/redirect_path.hh"
 #include "sim/syscall_desc.hh"
 #include "sim/system.hh"
+#include <unistd.h>  
 
 using namespace std;
 using namespace TheISA;
@@ -571,6 +572,11 @@ ProcessParams::create()
     if (executable == "") {
         executable = cmd[0];
     }
+
+    //Change the run directory to tgtcwd
+    chdir(cwd.c_str());
+    //    char s[1000]; 
+    printf("CWD: %s\n", getcwd(NULL, 0)); 
 
     ObjectFile *obj_file = createObjectFile(executable);
     fatal_if(!obj_file, "Cannot load object file %s.", executable);
