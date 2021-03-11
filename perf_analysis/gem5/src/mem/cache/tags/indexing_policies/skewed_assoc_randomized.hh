@@ -181,6 +181,29 @@ class SkewedAssocRand : public BaseIndexingPolicy
      */
     uint64_t calcQARMA64(uint64_t phy_line_num,uint64_t seed);
 
+    /** [Skewed Randomized Cache] **/
+    /** Generates a 64-bit cipher-text for a line-number using PRINCE64 
+     * @param phy_line_num The line number of the physical addr.
+     * @param seed A seed to change the randomization (added to key)
+     * @return The 64-bit cipher-text.    
+     */
+    uint64_t calcPRINCE64(uint64_t phy_line_num, uint64_t seed);
+    //Provides bytevec in big-endian format (MSB first as needed by PRINCE)
+    void uint64_to_bytevec(uint64_t  input, uint8_t output[8]){
+      uint8_t* input_le = (uint8_t*)&input;
+      for(int i=0; i<8; i++){
+	output[i] = input_le[7-i];
+      }
+    }
+    //Provides uint64_t in little-endian format (converting from big-endian output of  PRINCE)
+    uint64_t bytevec_to_uint64(uint8_t input[8]){
+      uint64_t output;
+      uint8_t* output_le = (uint8_t*)&output;
+      for(int i=0; i<8; i++){
+	output_le[i] = input[7-i];
+      }
+      return output;
+    }
 };
 
 #endif //__MEM_CACHE_INDEXING_POLICIES_SKEWED_ASSOC_RANDOM_HH__

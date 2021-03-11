@@ -211,7 +211,7 @@ def addCommonOptions(parser):
                       the selected cache)""")
     parser.add_option("--checker", action="store_true");
     parser.add_option("--cpu-clock", action="store", type="string",
-                      default='2GHz',
+                      default='3GHz',
                       help="Clock for blocks running at CPU speed")
     parser.add_option("--smt", action="store_true", default=False,
                       help = """
@@ -481,6 +481,7 @@ def addMirageOptions(parser):
                       help="[Baseline,BaselineRRIP,scatter-cache,skew-vway-rand]")
     parser.add_option("--l2_numSkews", type="int", default=1)
     parser.add_option("--l2_TDR", type="float", default=1.5)
+    parser.add_option("--l2_EncrLat", type="int", default=3)
 
 def addMultiprogramOptions(parser):
     parser.add_option("--rate-mode", action="store_true", help="Enable rate-mode execution of single WL")

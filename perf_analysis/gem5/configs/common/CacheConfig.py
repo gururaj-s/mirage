@@ -115,12 +115,17 @@ def config_cache(options, system):
                       "of type", type(system.l2.prefetcher), ", using the",
                       "specified by the flag option.")
             system.l2.prefetcher = hwpClass()
+        l2latency = 24
         if options.mirage_mode:
             if options.mirage_mode == "Baseline":
-                system.l2.tag_latency     = 20
+                system.l2.tag_latency     = l2latency
             elif options.mirage_mode == "BaselineRRIP":
-                system.l2.tag_latency     = 20
+                system.l2.tag_latency     = l2latency
                 system.l2.replacement_policy = RRIPRP()
+            elif options.mirage_mode == "BaselineBRRIP":
+                system.l2.tag_latency     = l2latency
+                system.l2.replacement_policy = BRRIPRP()
+                system.l2.replacement_policy.btp = 5;
             elif options.mirage_mode == "scatter-cache":
                 system.l2.skewedCache = True
                 system.l2.randomizedIndexing = True
@@ -160,13 +165,16 @@ def config_cache(options, system):
                 elif ( (int(system.l2.numSkews) > 1) ) :
                     system.l2.replacement_policy = RandomRP() #For more than 1 skew, use Random Repl
             #Set Cache Lookup Latency
-            if (str(system.l2.vwayCache) == "True"): # Lookup Latency is 26 for Vway + Rand
-                system.l2.tag_latency     = 26
-                system.l2.tags.tag_latency = 26
+            if ((str(system.l2.vwayCache) == "True") and (str(system.l2.randomizedIndexing) == "True")): # Lookup Latency is 24 for Vway + Rand (MIRAGE)
+                system.l2.tag_latency      = l2latency + options.l2_EncrLat + 1 #4
+                system.l2.tags.tag_latency = l2latency + options.l2_EncrLat + 1 #4
                 ##TODO: sequentialAccess = True & Data_latency = 1. Then tag_latency will be 25.
-            elif (str(system.l2.randomizedIndexing) == "True"): # Lookup Latency is 25 for Skewed Rand
-                system.l2.tag_latency     = 25
-                system.l2.tags.tag_latency = 25
+            elif (str(system.l2.randomizedIndexing) == "True"): # Lookup Latency is 25 for Skewed Rand (Scatter-Cache)
+                system.l2.tag_latency     = l2latency + options.l2_EncrLat #3
+                system.l2.tags.tag_latency = l2latency + options.l2_EncrLat #3
+            elif (str(system.l2.vwayCache) == "True"): # Lookup Latency is 21 for only Vway-Cache
+                system.l2.tag_latency     = l2latency + 1
+                system.l2.tags.tag_latency = l2latency + 1
 
     if options.memchecker:
         system.memchecker = MemChecker()
