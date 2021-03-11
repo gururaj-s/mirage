@@ -146,14 +146,7 @@ numThreads = 1
 numProcesses = options.num_cpus
 
 for i in range(numProcesses):
-    if(options.rate_mode):
-        proc = user_defined_benchmarks.create_proc_ratemode(options.benchmark,i)
-    elif(options.mix_mode):
-        print("Mix not supported")
-        sys.exit(1)
-    else :
-        print("Mix not supported")
-        sys.exit(1)
+    proc = user_defined_benchmarks.create_proc(options.benchmark,i)
     # Set process stdout/stderr
     if options.benchmark_stdout:
         proc.output = options.benchmark_stdout + "_"+str(i)
