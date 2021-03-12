@@ -70,10 +70,10 @@ Here you will recreate results in Appendix-B: *Fig-15*, by executing the followi
       * **Run the experiments**: Once all the checkpoints are created, the experiments will be run using `./runscript.sh <BMARK> <RUN-NAME> <SCHEME>`, where each HW config (Baseline, Scatter-Cache, MIRAGE) is simulated for each benchmark.
       	- The arguments for `runscript.sh` are as follows:
           -  RUN-NAME: Any string that will be used to identify this run, and the name for the results-folder of this run.
-          -  SCHEME: [Baseline, scatter-cache, skew-vway-rand]. (skew-vway-rand is essentially MIRAGE).
-	  -  NUM_CORES: Number of cores (default is 4).
- 	  -  LLCSZ: Size of the LLC (default is 8MB).
-	  -  ENCRLAT: Encryptor Latency (default is 3 cycles).
+          -  SCHEME: [Baseline, scatter-cache, skew-vway-rand]. (skew-vway-rand is MIRAGE).
+          -  NUM_CORES: Number of cores (default is 4).
+          -  LLCSZ: Size of the LLC (default is 8MB).
+          -  ENCRLAT: Encryptor Latency (default is 3 cycles).
       	- Each program is simulated for 1 billion instructions. This takes ~8 hours per benchmark, per scheme. Benchmarks in 2-3 schemes are run in parallel for a total of up to 84 parallel Gem5 runs at a time (please modify run.perf.4C.sh if your system cannot support upto 80 parallel threads).
       * **Generate results:** `cd stats_scripts; ./data_perf.sh`. This will compare the normalized performance (using weighted speedup metric) vs baseline.
         - The normalized peformance results will be stored in `stats_scripts/data/perf.stat`. 
