@@ -50,7 +50,7 @@ Here you can recreate all the Security-Analysis related tables and graphs: *Fig-
 
 
 ### Steps for Gem5 Evaluation
-Here you will recreate results in Appendix-B: *Fig-15*, by executing the following steps:
+Here you will recreate results in Appendix-B(Fig-15), by executing the following steps:
 - **Compile Gem5:** `cd perf_analysis/gem5 ; scons -j50 build/X86/gem5.opt`
 - **Set Paths** in `scripts/env.sh`. You will set the following :
     - `GEM5_PATH`: the full path of the gem5 directory (current directory).
@@ -87,7 +87,7 @@ Here you will recreate results in Appendix-B: *Fig-15*, by executing the followi
       * Results for normalized Perf vs. EncrLat can be generated using `cd stats_scripts; ./data_EncrLat.sh`. 
       * Results are stored in `stats_scripts/data/perf.EncLat.stat`.
 - **Visualize the results:** Graphs can be generated using jupyter notebook `graphs/plot_graphs.ipynb` for Performance, LLCSz vs Perf., EncrLat vs Perf.
-- **Steps to Decrease Simulation Time:** 
-    - Simulation instruction count in `runscript.sh` can be reduced to 500 Million instructions to reduce time for experiments.
-    - You can just run `./run.perf.4C.sh` instead of `run_all_exp.sh` and skip the sensitivity analysis if you are just starting off.
-    - You can fire off more experiments in parallel if your system supports it by commenting out the sleep while-loops in `run.perf.4C.sh` and `run.sensitivity.*.sh`.
+- **Note on Simulation Timee:** Running all the experiments will take close to 3-4 days on a system supporting 72 threads. 
+    - If you need to shorten experiment run time, you may want to reduce instruction count in `runscript.sh`to 500 Millions.
+    - You may also just run `./run.perf.4C.sh` and skip the sensitivity analysis.
+    - You can also run more parallel gem5 sims if your system supports it by modifying the sleep-loops in `run.perf.4C.sh` and `run.sensitivity.*.sh`.
