@@ -1,34 +1,42 @@
 #!/bin/bash
+
 ############ NOTE: This script sets up the following variables and then runs the command below ############
 
 # **(modify these as needed)**
 # OUTPUT_DIR: Where the results will be written
 # GEM5_PATH: path for current cleanupspec directory
 # BENCHMARK: name of the benchmark being run
+# NUM_CORES: number of cores.
 # CKPT_OUT_DIR: directory in which Checkpoint is to be written
 # INST_TAKE_CHECKPOINT: instruction at which checkpoint is to be taken
 # MAX_INSTS: Number of instructions to simulate (ckpt-inst + 1)
 # SCRIPT_OUT: Log file
 
-#$GEM5_PATH/build/X86/gem5.opt \
-#    --outdir=$OUTPUT_DIR $GEM5_PATH/configs/example/spec06_config.py \
-#    --benchmark=$BENCHMARK --benchmark_stdout=$OUTPUT_DIR/$BENCHMARK.out \
-#    --benchmark_stderr=$OUTPUT_DIR/$BENCHMARK.err \
-#    --num-cpus=1 --mem-size=4GB \
-#    --checkpoint-dir=$CKPT_OUT_DIR \
-#    --take-checkpoint=$INST_TAKE_CHECKPOINT --at-instruction \
-#    --mem-type=SimpleMemory \
-#    --maxinsts=$MAX_INSTS  \
-#    --prog-interval=0.003MHz \
-#    >> $SCRIPT_OUT 2>&1 &
+##$GEM5_PATH/configs/example/spec06_config_multiprogram.py \
+## --benchmark=$BENCHMARK \
+## --benchmark_stdout=$OUTPUT_DIR/$BENCHMARK.out \
+## --benchmark_stderr=$OUTPUT_DIR/$BENCHMARK.err \
+## --num-cpus=$NUM_CORES --mem-size=8GB \
+## --checkpoint-dir=$CKPT_OUT_DIR \
+## --take-checkpoint=$INST_TAKE_CHECKPOINT --at-instruction \
+## --mem-type=SimpleMemory \
+## --maxinsts=$MAX_INSTS \
+## --prog-interval=0.003MHz \
+## >> $SCRIPT_OUT 2>&1 &
 
 
 ############ CHECKPOINT CONFIGURATION #############
 # (Modify as needed)
-BENCHMARK=$1                    # Benchmark name, e.g. perlbench
+if [ $# -gt 1 ]; then
+    BENCHMARK=$1  # Benchmark name, e.g. perlbench
+    NUM_CORES=$2  # Select number of cores
+else
+    echo "Your command line contains <2 arguments"
+    exit
+fi
 
-CHECKPOINT_CONFIG="ooo_4Gmem_100K"
-INST_TAKE_CHECKPOINT=100000
+CHECKPOINT_CONFIG="multiprogram_8Gmem_100K"    # Name of directory inside CKPT_PATH
+INST_TAKE_CHECKPOINT=100000           # Instruction count after which checkpoint was taken
 
 MAX_INSTS=$((INST_TAKE_CHECKPOINT + 1)) #simulate till checkpoint instruction
 
@@ -91,131 +99,24 @@ SPHINX3_CODE=482.sphinx3
 XALANCBMK_CODE=483.xalancbmk
 SPECRAND_INT_CODE=998.specrand
 SPECRAND_FLOAT_CODE=999.specrand
-
-#################### BENCHMARK NAME TO FOLDER NAME MAPPING ######################
-
-BENCHMARK_CODE="none"
-
-if [[ "$BENCHMARK" == "perlbench" ]]; then
-    BENCHMARK_CODE=$PERLBENCH_CODE
-fi
-if [[ "$BENCHMARK" == "bzip2" ]]; then
-    BENCHMARK_CODE=$BZIP2_CODE
-fi
-if [[ "$BENCHMARK" == "gcc" ]]; then
-    BENCHMARK_CODE=$GCC_CODE
-fi
-if [[ "$BENCHMARK" == "bwaves" ]]; then
-    BENCHMARK_CODE=$BWAVES_CODE
-fi
-if [[ "$BENCHMARK" == "gamess" ]]; then
-    BENCHMARK_CODE=$GAMESS_CODE
-fi
-if [[ "$BENCHMARK" == "mcf" ]]; then
-    BENCHMARK_CODE=$MCF_CODE
-fi
-if [[ "$BENCHMARK" == "milc" ]]; then
-    BENCHMARK_CODE=$MILC_CODE
-fi
-if [[ "$BENCHMARK" == "zeusmp" ]]; then
-    BENCHMARK_CODE=$ZEUSMP_CODE
-fi
-if [[ "$BENCHMARK" == "gromacs" ]]; then
-    BENCHMARK_CODE=$GROMACS_CODE
-fi
-if [[ "$BENCHMARK" == "cactusADM" ]]; then
-    BENCHMARK_CODE=$CACTUSADM_CODE
-fi
-if [[ "$BENCHMARK" == "leslie3d" ]]; then
-    BENCHMARK_CODE=$LESLIE3D_CODE
-fi
-if [[ "$BENCHMARK" == "namd" ]]; then
-    BENCHMARK_CODE=$NAMD_CODE
-fi
-if [[ "$BENCHMARK" == "gobmk" ]]; then
-    BENCHMARK_CODE=$GOBMK_CODE
-fi
-if [[ "$BENCHMARK" == "dealII" ]]; then 
-    BENCHMARK_CODE=$DEALII_CODE
-fi
-if [[ "$BENCHMARK" == "soplex" ]]; then
-    BENCHMARK_CODE=$SOPLEX_CODE
-fi
-if [[ "$BENCHMARK" == "povray" ]]; then
-    BENCHMARK_CODE=$POVRAY_CODE
-fi
-if [[ "$BENCHMARK" == "calculix" ]]; then
-    BENCHMARK_CODE=$CALCULIX_CODE
-fi
-if [[ "$BENCHMARK" == "hmmer" ]]; then
-    BENCHMARK_CODE=$HMMER_CODE
-fi
-if [[ "$BENCHMARK" == "sjeng" ]]; then
-    BENCHMARK_CODE=$SJENG_CODE
-fi
-if [[ "$BENCHMARK" == "GemsFDTD" ]]; then
-    BENCHMARK_CODE=$GEMSFDTD_CODE
-fi
-if [[ "$BENCHMARK" == "libquantum" ]]; then
-    BENCHMARK_CODE=$LIBQUANTUM_CODE
-fi
-if [[ "$BENCHMARK" == "h264ref" ]]; then
-    BENCHMARK_CODE=$H264REF_CODE
-fi
-if [[ "$BENCHMARK" == "tonto" ]]; then
-    BENCHMARK_CODE=$TONTO_CODE
-fi
-if [[ "$BENCHMARK" == "lbm" ]]; then
-    BENCHMARK_CODE=$LBM_CODE
-fi
-if [[ "$BENCHMARK" == "omnetpp" ]]; then
-    BENCHMARK_CODE=$OMNETPP_CODE
-fi
-if [[ "$BENCHMARK" == "astar" ]]; then
-    BENCHMARK_CODE=$ASTAR_CODE
-fi
-if [[ "$BENCHMARK" == "wrf" ]]; then
-    BENCHMARK_CODE=$WRF_CODE
-fi
-if [[ "$BENCHMARK" == "sphinx3" ]]; then
-    BENCHMARK_CODE=$SPHINX3_CODE
-fi
-if [[ "$BENCHMARK" == "xalancbmk" ]]; then
-    BENCHMARK_CODE=$XALANCBMK_CODE
-fi
-if [[ "$BENCHMARK" == "specrand_i" ]]; then
-    BENCHMARK_CODE=$SPECRAND_INT_CODE
-fi
-if [[ "$BENCHMARK" == "specrand_f" ]]; then
-    BENCHMARK_CODE=$SPECRAND_FLOAT_CODE
-fi
-
-# Sanity check
-if [[ "$BENCHMARK_CODE" == "none" ]]; then
-    echo "Input benchmark selection $BENCHMARK did not match any known SPEC CPU2006 benchmarks! Exiting."
-    exit 1
-fi
-
+##################################################################
 
 ################## DIRECTORY NAMES (CHECKPOINT, OUTPUT, RUN DIRECTORY)  ###################
 #Set up based on path variables & configuration
 
 # Ckpt Dir
-CKPT_OUT_DIR=$CKPT_PATH/$CHECKPOINT_CONFIG/$BENCHMARK-1-ref-x86
+CKPT_OUT_DIR=$CKPT_PATH/${CHECKPOINT_CONFIG}.C${NUM_CORES}/$BENCHMARK-1-ref-x86
 echo "checkpoint directory: " $CKPT_OUT_DIR
 mkdir -p $CKPT_OUT_DIR
 
 # Output Dir
-OUTPUT_DIR=$GEM5_PATH/output/$CHECKPOINT_CONFIG/checkpoint_out/$BENCHMARK
+OUTPUT_DIR=$GEM5_PATH/output/${CHECKPOINT_CONFIG}.C${NUM_CORES}/checkpoint_out/$BENCHMARK
 echo "output directory: " $OUTPUT_DIR
 if [ -d "$OUTPUT_DIR" ]
 then
     rm -r $OUTPUT_DIR
 fi
 mkdir -p $OUTPUT_DIR
-
-#Run Dir
-RUN_DIR=$SPEC_PATH/benchspec/CPU2006/$BENCHMARK_CODE/run/run_base_ref_amd64-m64-gcc41-nn.0000
 
 # File log used for stdout
 SCRIPT_OUT=$OUTPUT_DIR/runscript.log
@@ -230,29 +131,29 @@ echo "==================== Script inputs =======================" | tee -a $SCRI
 echo "BENCHMARK:                                    $BENCHMARK" | tee -a $SCRIPT_OUT
 echo "OUTPUT_DIR:                                   $OUTPUT_DIR" | tee -a $SCRIPT_OUT
 echo "==========================================================" | tee -a $SCRIPT_OUT
+##################################################################
 
 
 #################### LAUNCH GEM5 SIMULATION ######################
 echo ""
-echo "Changing to SPEC benchmark runtime directory: $RUN_DIR" | tee -a $SCRIPT_OUT
+
 echo "" | tee -a $SCRIPT_OUT
 echo "" | tee -a $SCRIPT_OUT
 echo "--------- Here goes nothing! Starting gem5! ------------" | tee -a $SCRIPT_OUT
 echo "" | tee -a $SCRIPT_OUT
 echo "" | tee -a $SCRIPT_OUT
 
-#Changing directory to run-directory
-cd $RUN_DIR
-
 # Launch Gem5:
 $GEM5_PATH/build/X86/gem5.opt \
-    --outdir=$OUTPUT_DIR $GEM5_PATH/configs/example/spec06_config.py \
-    --benchmark=$BENCHMARK --benchmark_stdout=$OUTPUT_DIR/$BENCHMARK.out \
+    --outdir=$OUTPUT_DIR \
+    $GEM5_PATH/configs/example/spec06_config_multiprogram.py \
+    --benchmark=$BENCHMARK \
+    --benchmark_stdout=$OUTPUT_DIR/$BENCHMARK.out \
     --benchmark_stderr=$OUTPUT_DIR/$BENCHMARK.err \
-    --num-cpus=1 --mem-size=4GB \
+    --num-cpus=$NUM_CORES --mem-size=8GB \
     --checkpoint-dir=$CKPT_OUT_DIR \
     --take-checkpoint=$INST_TAKE_CHECKPOINT --at-instruction \
     --mem-type=SimpleMemory \
-    --maxinsts=$MAX_INSTS  \
+    --maxinsts=$MAX_INSTS \
     --prog-interval=0.003MHz \
     >> $SCRIPT_OUT 2>&1 &

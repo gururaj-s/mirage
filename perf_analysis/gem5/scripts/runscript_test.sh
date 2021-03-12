@@ -8,42 +8,55 @@
 # BENCHMARK: name of the benchmark being run
 # CKPT_OUT_DIR: directory in which Checkpoint being restored for current benchmark
 # INST_TAKE_CHECKPOINT: instruction at which to restore checkpoint
-# SCHEME: Scheme name to simulate (BaselineRRIP, scatter-cache, skew-vway-rand i.e. MIRAGE)
+# SCHEME: Scheme name to simulate (Baseline, scatter-cache, skew-vway-rand i.e. MIRAGE)
+# NUM_CORES: select number of cores
+# LLCSZ: LLC-Size
+# ENCRLATL   Encryptor Latency
 # MAX_INSTS: Number of instructions to simulate
 # SCRIPT_OUT: Log file
 
 #$GEM5_PATH/build/X86/gem5.opt \
-#    --outdir=$OUTPUT_DIR  $GEM5_PATH/configs/example/spec06_config.py \
-#    --benchmark=$BENCHMARK --benchmark_stdout=$OUTPUT_DIR/$BENCHMARK.out \
+#    --outdir=$OUTPUT_DIR \
+#    $GEM5_PATH/configs/example/spec06_config_multiprogram.py \
+#    --benchmark=$BENCHMARK \
+#    --benchmark_stdout=$OUTPUT_DIR/$BENCHMARK.out \
 #    --benchmark_stderr=$OUTPUT_DIR/$BENCHMARK.err \
-#    --num-cpus=1 --mem-size=4GB --mem-type=DDR4_2400_8x8 \
+#    --num-cpus=$NUM_CORES --mem-size=8GB --mem-type=DDR4_2400_8x8 \
 #    --checkpoint-dir=$CKPT_OUT_DIR \
 #    --checkpoint-restore=$INST_TAKE_CHECKPOINT --at-instruction \
 #    --cpu-type TimingSimpleCPU \
-#    --caches --l2cache --num-l2caches=1 \
-#    --l1d_size=32kB --l1i_size=32kB --l2_size=2MB \
+#    --caches --l2cache \
+#    --l1d_size=32kB --l1i_size=32kB --l2_size=$LLCSZ \
 #    --l1d_assoc=8  --l1i_assoc=8 --l2_assoc=16 \
-#    --mirage_mode=$SCHEME --l2_numSkews=2 --l2_TDR=2 \
-#    --maxinsts=$MAX_INSTS  \
-#    --prog-interval=0.003MHz \
+#    --mirage_mode=$SCHEME --l2_numSkews=2 --l2_TDR=1.75 --l2_EncrLat=$ENCRLAT \
+#    --maxinsts=$MAX_INSTS \
+#    --prog-interval=300Hz \
 #    >> $SCRIPT_OUT 2>&1 &
+
 
 ######################### CONFIG OPTIONS #########################################
 # To be modified as required
-if [ $# -gt 2 ]; then
+if [ $# -gt 5 ]; then
     BENCHMARK=$1  #select benchmark
     RUN_CONFIG=$2 #specify output folder name
-    SCHEME=$3     #specify scheme [BaselineRRIP,scatter-cache,skew-vway-rand]
+    SCHEME=$3     #specify scheme [Baseline, scatter-cache, skew-vway-rand]
+    NUM_CORES=$4 #select number of cores
+    LLCSZ=$5     #LLC-Size
+    ENCRLAT=$6   #Encryptor Latency
 else
-    echo "Your command line contains <3 arguments"
+    echo "Your command line contains <6 arguments"
     exit
     BENCHMARK=perlbench                    # Benchmark name, e.g. perlbench
     RUN_CONFIG="Test"                      # Name of configuration being run (will decide output directory name)
-    SCHEME="BaselineRRIP"                      # Decides the scheme being simulated
+    SCHEME="Baseline"                      # Decides the scheme being simulated
+    NUM_CORES=4                            # Select number of cores
+    LLCSZ="8MB"                            # LLC-Size
+    ENCRLAT=3                              # Encryptor Latency
 fi
 
+#RUN CONFIG
 MAX_INSTS=500000                      # Number of instructions to be simulated
-CHECKPOINT_CONFIG="ooo_4Gmem_100K"    # Name of directory inside CKPT_PATH
+CHECKPOINT_CONFIG="multiprogram_8Gmem_100K"    # Name of directory inside CKPT_PATH
 INST_TAKE_CHECKPOINT=100000           # Instruction count after which checkpoint was taken
 
 ############ DIRECTORY PATHS TO BE EXPORTED #############
@@ -107,129 +120,22 @@ SPECRAND_INT_CODE=998.specrand
 SPECRAND_FLOAT_CODE=999.specrand
 ##################################################################
 
-#################### BENCHMARK NAME TO FOLDER NAME MAPPING ######################
-
-BENCHMARK_CODE="none"
-
-if [[ "$BENCHMARK" == "perlbench" ]]; then
-    BENCHMARK_CODE=$PERLBENCH_CODE
-fi
-if [[ "$BENCHMARK" == "bzip2" ]]; then
-    BENCHMARK_CODE=$BZIP2_CODE
-fi
-if [[ "$BENCHMARK" == "gcc" ]]; then
-    BENCHMARK_CODE=$GCC_CODE
-fi
-if [[ "$BENCHMARK" == "bwaves" ]]; then
-    BENCHMARK_CODE=$BWAVES_CODE
-fi
-if [[ "$BENCHMARK" == "gamess" ]]; then
-    BENCHMARK_CODE=$GAMESS_CODE
-fi
-if [[ "$BENCHMARK" == "mcf" ]]; then
-    BENCHMARK_CODE=$MCF_CODE
-fi
-if [[ "$BENCHMARK" == "milc" ]]; then
-    BENCHMARK_CODE=$MILC_CODE
-fi
-if [[ "$BENCHMARK" == "zeusmp" ]]; then
-    BENCHMARK_CODE=$ZEUSMP_CODE
-fi
-if [[ "$BENCHMARK" == "gromacs" ]]; then
-    BENCHMARK_CODE=$GROMACS_CODE
-fi
-if [[ "$BENCHMARK" == "cactusADM" ]]; then
-    BENCHMARK_CODE=$CACTUSADM_CODE
-fi
-if [[ "$BENCHMARK" == "leslie3d" ]]; then
-    BENCHMARK_CODE=$LESLIE3D_CODE
-fi
-if [[ "$BENCHMARK" == "namd" ]]; then
-    BENCHMARK_CODE=$NAMD_CODE
-fi
-if [[ "$BENCHMARK" == "gobmk" ]]; then
-    BENCHMARK_CODE=$GOBMK_CODE
-fi
-if [[ "$BENCHMARK" == "dealII" ]]; then 
-    BENCHMARK_CODE=$DEALII_CODE
-fi
-if [[ "$BENCHMARK" == "soplex" ]]; then
-    BENCHMARK_CODE=$SOPLEX_CODE
-fi
-if [[ "$BENCHMARK" == "povray" ]]; then
-    BENCHMARK_CODE=$POVRAY_CODE
-fi
-if [[ "$BENCHMARK" == "calculix" ]]; then
-    BENCHMARK_CODE=$CALCULIX_CODE
-fi
-if [[ "$BENCHMARK" == "hmmer" ]]; then
-    BENCHMARK_CODE=$HMMER_CODE
-fi
-if [[ "$BENCHMARK" == "sjeng" ]]; then
-    BENCHMARK_CODE=$SJENG_CODE
-fi
-if [[ "$BENCHMARK" == "GemsFDTD" ]]; then
-    BENCHMARK_CODE=$GEMSFDTD_CODE
-fi
-if [[ "$BENCHMARK" == "libquantum" ]]; then
-    BENCHMARK_CODE=$LIBQUANTUM_CODE
-fi
-if [[ "$BENCHMARK" == "h264ref" ]]; then
-    BENCHMARK_CODE=$H264REF_CODE
-fi
-if [[ "$BENCHMARK" == "tonto" ]]; then
-    BENCHMARK_CODE=$TONTO_CODE
-fi
-if [[ "$BENCHMARK" == "lbm" ]]; then
-    BENCHMARK_CODE=$LBM_CODE
-fi
-if [[ "$BENCHMARK" == "omnetpp" ]]; then
-    BENCHMARK_CODE=$OMNETPP_CODE
-fi
-if [[ "$BENCHMARK" == "astar" ]]; then
-    BENCHMARK_CODE=$ASTAR_CODE
-fi
-if [[ "$BENCHMARK" == "wrf" ]]; then
-    BENCHMARK_CODE=$WRF_CODE
-fi
-if [[ "$BENCHMARK" == "sphinx3" ]]; then
-    BENCHMARK_CODE=$SPHINX3_CODE
-fi
-if [[ "$BENCHMARK" == "xalancbmk" ]]; then
-    BENCHMARK_CODE=$XALANCBMK_CODE
-fi
-if [[ "$BENCHMARK" == "specrand_i" ]]; then
-    BENCHMARK_CODE=$SPECRAND_INT_CODE
-fi
-if [[ "$BENCHMARK" == "specrand_f" ]]; then
-    BENCHMARK_CODE=$SPECRAND_FLOAT_CODE
-fi
-
-# Sanity check
-if [[ "$BENCHMARK_CODE" == "none" ]]; then
-    echo "Input benchmark selection $BENCHMARK did not match any known SPEC CPU2006 benchmarks! Exiting."
-    exit 1
-fi
-
 
 ################## DIRECTORY NAMES (CHECKPOINT, OUTPUT, RUN DIRECTORY)  ###################
 #Set up based on path variables & configuration
 
 # Ckpt Dir
-CKPT_OUT_DIR=$CKPT_PATH/$CHECKPOINT_CONFIG/$BENCHMARK-1-ref-x86
+CKPT_OUT_DIR=$CKPT_PATH/${CHECKPOINT_CONFIG}.C${NUM_CORES}/$BENCHMARK-1-ref-x86
 echo "checkpoint directory: " $CKPT_OUT_DIR
 
 # Output Dir
-OUTPUT_DIR=$GEM5_PATH/output/$CHECKPOINT_CONFIG/$RUN_CONFIG/${SCHEME}/$BENCHMARK
+OUTPUT_DIR=$GEM5_PATH/output/${CHECKPOINT_CONFIG}.C${NUM_CORES}/$RUN_CONFIG/${SCHEME}/$BENCHMARK
 echo "output directory: " $OUTPUT_DIR
 if [ -d "$OUTPUT_DIR" ]
 then
     rm -r $OUTPUT_DIR
 fi
 mkdir -p $OUTPUT_DIR
-
-#Run Dir
-RUN_DIR=$SPEC_PATH/benchspec/CPU2006/$BENCHMARK_CODE/run/run_base_ref_amd64-m64-gcc41-nn.0000
 
 # File log used for stdout
 SCRIPT_OUT=$OUTPUT_DIR/runscript.log
@@ -249,8 +155,6 @@ echo "==========================================================" | tee -a $SCRI
 
 #################### LAUNCH GEM5 SIMULATION ######################
 echo ""
-echo "Changing to SPEC benchmark runtime directory: $RUN_DIR" | tee -a $SCRIPT_OUT
-cd $RUN_DIR
 
 echo "" | tee -a $SCRIPT_OUT
 echo "" | tee -a $SCRIPT_OUT
@@ -261,18 +165,18 @@ echo "" | tee -a $SCRIPT_OUT
 # Launch Gem5:
 $GEM5_PATH/build/X86/gem5.opt \
     --outdir=$OUTPUT_DIR \
-    $GEM5_PATH/configs/example/spec06_config.py \
+    $GEM5_PATH/configs/example/spec06_config_multiprogram.py \
     --benchmark=$BENCHMARK \
     --benchmark_stdout=$OUTPUT_DIR/$BENCHMARK.out \
     --benchmark_stderr=$OUTPUT_DIR/$BENCHMARK.err \
-    --num-cpus=1 --mem-size=4GB --mem-type=DDR4_2400_8x8 \
+    --num-cpus=$NUM_CORES --mem-size=8GB --mem-type=DDR4_2400_8x8 \
     --checkpoint-dir=$CKPT_OUT_DIR \
     --checkpoint-restore=$INST_TAKE_CHECKPOINT --at-instruction \
     --cpu-type TimingSimpleCPU \
-    --caches --l2cache --num-l2caches=1 \
-    --l1d_size=32kB --l1i_size=32kB --l2_size=2MB \
+    --caches --l2cache \
+    --l1d_size=32kB --l1i_size=32kB --l2_size=$LLCSZ \
     --l1d_assoc=8  --l1i_assoc=8 --l2_assoc=16 \
-    --mirage_mode=$SCHEME --l2_numSkews=2 --l2_TDR=2 \
-    --maxinsts=$MAX_INSTS  \
-    --prog-interval=0.003MHz \
+    --mirage_mode=$SCHEME --l2_numSkews=2 --l2_TDR=1.75 --l2_EncrLat=$ENCRLAT \
+    --maxinsts=$MAX_INSTS \
+    --prog-interval=300Hz \
     >> $SCRIPT_OUT 2>&1 &

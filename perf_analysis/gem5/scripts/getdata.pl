@@ -12,7 +12,8 @@ $norm_dir  = -1;
 ######### USAGE OPTIONS      ########
 #####################################
 
-$ipcsum    = 0;
+$ipc       = 0;
+$numcores  = 4;
 $ws        = 0;
 $fairness  = 0;
 $print_max = 0;
@@ -55,6 +56,7 @@ sub usage(){
     print(STDERR "\t-h                     : help -- print this menu. \n");
     print(STDERR "\t-t                     : throughput. \n");
     print(STDERR "\t-ws                    : weighted speedup. \n");
+    print(STDERR "\t-ipc <numcores>        : calculate ipc. \n");
     print(STDERR "\t-hf                    : fairness. \n");
     print(STDERR "\t-b <basedir>           : base directory for ws and fairness \n");
     print(STDERR "\t-n <pos>               : print stats normalized to this dir <num> in dir list \n");
@@ -98,8 +100,9 @@ sub usage(){
 while (@ARGV) {
     $option = shift;
  
-    if ($option eq "-t") {
-        $ipcsum = 1;
+    if ($option eq "-ipc") {
+        $ipc = 1;
+	$numcores = shift;
     }elsif ($option eq "-ws") {
         $ws = 1;
     }elsif ($option eq "-hf") {
@@ -189,14 +192,14 @@ my (@w) = split(/\s+/, $SUITES{$wsuite});
 $num_w = scalar @w;
 @bmks = split/-/,$w[0];
 $num_p = scalar @bmks;
-$num_p = 16;
+$num_p = 4;
 
 $num_w = $wlimit if($wlimit && $wlimit < $num_w);
 
 init_stats();
 get_stats();
 
-
+get_ipc_stats() if($ipc); # calculate IPC
 get_cstats() if($cstat); # complex stats
 get_nstats() if($nstat);
 get_dstats() if($dstat);
@@ -245,11 +248,6 @@ sub get_stats{
       $wname   = $w[$ii];
       @bmks = split/-/,$wname;
       
-      if($ws || $fairness){
-          for($jj=0; $jj<$num_p;$jj++){
-              $base_ipc[$jj] = &get_base_ipc($bmks[$jj]);
-          }
-      }
       
       $fname   = $dir . $wname . "/stats.txt";
       $readable = 1;
@@ -269,9 +267,7 @@ sub get_stats{
               
               if($words[$jj] && ($words[$jj] =~ $stat) ){
                   $pos = $jj+1;
-                  $val = $words[$pos];
-                  $val = ($val/$base_ipc[$found]) if ($ws);
-                  $val = ($base_ipc[$found]/$val) if($fairness);
+                  $val = $words[$pos];      
                   $data[$dirnum][$ii] += $val;
                   printf "stat match for $stat found for $_" if($debug);
                   $found++;
@@ -866,46 +862,188 @@ sub print_slist_stats{
 
 ########################## SUBROUTINES ######################
 
-sub get_base_ipc{
-    $bmk = $_[0];
-    $retval = 1;
-
-    if($base_ipc_dir){
-	$bfname = $base_ipc_dir ."/". $bmk . ".res";
-	$breadable = 1;
-	$bfound=0;
-
-	open(BIN, $bfname) or $breadable=0;
-	
-	unless($breadable){
-	    print "cannot open $bfname for read for base IPC\n" unless $nowarn;
-	}
-
-	while( ($breadable) && ($_ = <BIN>) ){
-	    @bwords = split/\s+/, $_;
-	    if($bwords[0] && $bwords[0] eq "CORE_0_IPC"){
-		$retval = $bwords[2];
-		$bfound=1;
-	    }
-	}
-
-	close(IN);	
-	if($bfound==0){
-	    print "did not find IPC information in file $bfname\n";	
-	}
-    }
-
-    $retval;
-}
-
 ############################## COMPLEX  ###########################
 
 sub get_cstats{
 
 }
-
-
-
 ############################## SUB COMPLEX  ###########################
+
+
+############################## IPC  ###########################
+sub get_base_ipc_gem5{
+    $cycle_statname = "numCycles";
+    $committedinst_statname = "committedInsts";
+    $cpu_name = "system.switch_cpus";
+
+    $nstat = $cpu_name . "." . $committedinst_statname;
+    $dstat = $cpu_name . "." . $cycle_statname ;
+    
+    # Directory for reading the base_ipc.
+    $dir = $base_ipc_dir . "/";
+    
+    # Populate the workloads for base-ipc. 
+    for($ii=0; $ii< $num_w; $ii++){
+	$wname   = $w[$ii];	
+	my $base_wname = $wname;
+	if ($wname =~ /mix/) {
+	    #Add each of the benchmarks within a mix-workload
+	    for my $wname_to_add (@{$mix_wls{$wname}}){
+		push @base_wnames, $wname_to_add;
+	    }	    
+	} else {
+	    push @base_wnames, $base_wname;
+	}
+    }
+    # Uniquify the list of base_wnames
+    use List::MoreUtils qw(uniq);
+    my @uniq_base_wnames = uniq @base_wnames;    
+    $base_wname_count = @uniq_base_wnames; 
+    # For each workload, $wname
+    for($ww=0; $ww< $base_wname_count; $ww++){
+	$wname   = $uniq_base_wnames[$ww];
+	$fname   = $dir . $wname . "/stats.txt";
+
+	# Read nstat (instructions)
+	$readable = 1;      
+	open(IN, $fname) or $readable=0;
+	$found=0;
+	while( ($readable) && ($found<$num_p) && ($_ = <IN>) ){
+	    @words = split/\s+/, $_;
+	    $num_words = scalar(@words);
+          
+	    for($jj=0; $jj<$num_words-1; $jj++){
+		printf "$words[$jj]\n" if($debug);
+              
+		if($words[$jj] && ($words[$jj] =~ $nstat) ){
+		    $pos = $jj+1;
+		    $val = $words[$pos];
+		    $temp_ndata[$ww] += $val;
+		    printf "stat match for $stat found for $_" if($debug);
+		    $found++;
+		}
+	    }          
+	}
+	close(IN);
+
+	# Read dstat (cycles)
+	$readable = 1;      
+	open(IN, $fname) or $readable=0;
+	$found=0;
+	while( ($readable) && ($found<$num_p) && ($_ = <IN>) ){
+	    @words = split/\s+/, $_;
+	    $num_words = scalar(@words);
+          
+	    for($jj=0; $jj<$num_words-1; $jj++){
+		printf "$words[$jj]\n" if($debug);
+              
+		if($words[$jj] && ($words[$jj] =~ $dstat) ){
+		    $pos = $jj+1;
+		    $val = $words[$pos];
+		    $temp_ddata[$ww] += $val;
+		    printf "stat match for $stat found for $_" if($debug);
+		    $found++;
+		}
+	    }          
+	}
+	close(IN);
+
+	##Calculate the base_ipc if available and add it to base_ipc list.
+	if($temp_ddata[$ww]) {
+	    $base_ipc_wl = $temp_ndata[$ww] / $temp_ddata[$ww] ;
+	    $base_ipc_gem5{$wname} = $base_ipc_wl;	    
+	}
+    }
+}
+
+sub get_ipc_stats{
+
+    ## Define variable name for cycles, inst, cpu-name
+    $cycle_statname = "numCycles";
+    $committedinst_statname = "committedInsts";
+    $cpu_name = "system.switch_cpus";
+
+    # Caclulate IPC for each core.
+    for(my $i = 0; $i < $numcores; $i++){
+	$curr_cpu = $cpu_name ;
+	if($numcores > 1) {
+	    $curr_cpu = $cpu_name . $i;
+	}
+        # Divide inst/cycles for each core
+	$nstat = $curr_cpu . "." . $committedinst_statname;
+	$dstat = $curr_cpu . "." . $cycle_statname ;
+	get_nstats(); 
+	get_dstats() ;
+	divide_n_by_d();
+	
+	# Save the IPC (data[DIR][WL]) for each core i
+	for($dirnum=0; $dirnum<@dirs; $dirnum++){
+	    for($ii=0; $ii< $num_w; $ii++){
+		$data_ipc[$i][$dirnum][$ii] = $data[$dirnum][$ii];
+	    }
+	}
+    }
+    
+    # For weighted-speedup:
+    if($ws){	
+	die "Base IPC Directory unspecified (-b) \n"
+	    unless $base_ipc_dir;
+
+	# Get single_prog_ipc for each workload.
+	get_base_ipc_gem5();
+	
+        # Print the base_ipc
+	print "Printing base_ipc_gem5 \n" if($debug);
+	foreach $key (keys %base_ipc_gem5){
+	    print "$key base_ipc $base_ipc_gem5{$key}\n" if($debug);
+	}
+
+	# Divide data_ipc by base_ipc: For each directory
+	for($dirnum=0; $dirnum<@dirs; $dirnum++){
+	    # For each workload
+	    for($ii=0; $ii< $num_w; $ii++){
+		$wname   = $w[$ii];
+		print $wname . ":" if ($debug);
+		# For each core
+		for(my $i = 0; $i < $numcores; $i++){	                       
+		    $base_ipc_wname = $wname;
+		    {
+			no warnings 'once';
+			$base_ipc_wname = $mix_wls{$wname}[$i] if ($wname =~ /mix/) ;
+		    }
+		    print $base_ipc_wname . "-" if ($debug);
+		    # Divide data_ipc by base_ipc
+		    $data_ipc[$i][$dirnum][$ii] = $data_ipc[$i][$dirnum][$ii] / $base_ipc_gem5{$base_ipc_wname} if($base_ipc_gem5{$base_ipc_wname});
+		}
+		print "\n" if ($debug);
+	    }
+	}
+    }
+
+    # Reset nstat and dstat
+    $nstat="";
+    $dstat="";
+   
+    # Sum IPC of each of the cores.
+    for($dirnum=0; $dirnum<@dirs; $dirnum++){
+	for($ii=0; $ii< $num_w; $ii++){
+	    #Initialize the data to 0.	    
+	    $data[$dirnum][$ii] = 0 ;
+	    # Add each core's data.
+	    for(my $i = 0; $i < $numcores; $i++){	                       
+		$data[$dirnum][$ii] += $data_ipc[$i][$dirnum][$ii];
+	    }
+	}
+    }
+    
+    # for($dirnum=0; $dirnum<@dirs; $dirnum++){
+    #	for($ii=0; $ii< $num_w; $ii++){
+    #	    print $data[$dirnum][$ii] ; #Initialize the data to 0.
+    #	}
+    # }
+}
+
+
+
 
 

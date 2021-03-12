@@ -79,28 +79,6 @@ cactusADM
 milc
 libquantum';
 
-$SUITES{'spec2006_ckpt_avail'} =
-'astar
-bzip2
-cactusADM
-gcc
-gobmk
-gromacs
-h264ref
-hmmer
-lbm
-libquantum
-mcf
-milc
-namd
-omnetpp
-perlbench
-povray
-sjeng
-soplex
-sphinx3
-wrf';
-
 
 $SUITES{'spec2006_hmpki'} =
 'bzip2
@@ -120,12 +98,40 @@ sjeng
 soplex
 sphinx3';
 
-
-$SUITES{'spec2006_hmpki_noomnet'} =
+$SUITES{'spec_mix_28'} =
 'lbm
 soplex
 milc
-mcf
+sphinx3
+libquantum
+cactusADM
+bzip2
+perlbench
+hmmer
+gromacs
+sjeng
+gobmk
+gcc
+h264ref
+mix1
+mix2
+mix3
+mix4
+mix5
+mix6
+mix7
+mix8
+mix9
+mix10
+mix11
+mix12
+mix13
+mix14';
+
+$SUITES{'spec_14'} =
+'lbm
+soplex
+milc
 sphinx3
 libquantum
 cactusADM
@@ -138,26 +144,55 @@ gobmk
 gcc
 h264ref';
 
-$SUITES{'spec2006_noomnet'} =
-'astar
-bzip2
-cactusADM
-gcc
-gobmk
-gromacs
-h264ref
-hmmer
-lbm
-libquantum
-mcf
-milc
-namd
-perlbench
-povray
-sjeng
+$SUITES{'mix_14'} =
+'mix1
+mix2
+mix3
+mix4
+mix5
+mix6
+mix7
+mix8
+mix9
+mix10
+mix11
+mix12
+mix13
+mix14';
+
+%mix_wls = (
+   mix1 => ['gobmk',    'milc',       'cactusADM',   'lbm'],
+   mix2 => ['hmmer',    'cactusADM',  'milc',        'sjeng'],
+   mix3 => ['gobmk',    'perlbench',  'soplex',      'cactusADM'],
+   mix4 => ['gobmk',    'sjeng',      'gcc',         'bzip2'],
+   mix5 => ['sjeng',    'hmmer',      'cactusADM',   'bzip2'],
+   mix6 => ['lbm',      'sphinx3',    'gobmk',       'hmmer'],
+   mix7 => ['bzip2',    'lbm',        'libquantum',  'perlbench'],
+   mix8 => ['gromacs',  'gobmk',      'h264ref',     'hmmer'],
+   mix9 => ['gromacs',  'h264ref',    'lbm',         'perlbench'],
+   mix10=> ['bzip2',    'perlbench',  'gobmk',       'soplex'],
+   mix11=> ['milc',     'sphinx3',    'gcc',         'lbm'],
+   mix12=> ['milc',     'lbm',        'h264ref',     'hmmer'],
+   mix13=> ['sjeng',    'sphinx3',    'lbm',         'h264ref'],
+   mix14=> ['gromacs',  'soplex',     'lbm',         'milc'],
+);
+
+
+$SUITES{'spec2006_hmpki_avail'} =
+'lbm
 soplex
+milc
 sphinx3
-wrf';
+libquantum
+cactusADM
+bzip2
+perlbench
+hmmer
+gromacs
+sjeng
+gobmk
+gcc
+h264ref';
 
 $SUITES{'spec2006'} =
 'mcf 

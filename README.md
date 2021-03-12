@@ -8,8 +8,8 @@ Gururaj Saileshwar and Moinuddin Qureshi. "MIRAGE: Mitigating Conflict-Based Cac
 ### Introduction
 The artifact covers two aspects of results from the paper:  
 
-- **Security Analysis of MIRAGE:** A [Bins and Buckets](https://en.wikipedia.org/wiki/Balls_into_bins_problem) model of the Last-Level-Cache implementing MIRAGE is provided in a C++ program, to quantify its security properties.  This aspect can be easily evaluated on a commodity CPU (perhaps even a laptop with 4-cores/8 threads) in 3-6 hours runtime, without major SW dependencies. The reviewer will be able to recreate all the Security-Analysis related tables and graphs: *Fig-7, Table-1, Fig-9, Fig-10, Table-4*. 
-- **Performance Analysis of MIRAGE:** An implementation of the MIRAGE LLC is provided as a part of the [Gem5 CPU Simulator](https://www.gem5.org/). To run the performance evaluations, a server-grade system is needed (at least 30 threads preferred) and the expected runtime is 12 - 24 hours. The reviewer is also required to have access to the SPEC-2006 benchmark suite (we are unable to provide this due to its restrictive license). The reviewers will be able to recreate the performance results provided in Appendix-B.  
+- **Security Analysis of MIRAGE:** A [Bins and Buckets](https://en.wikipedia.org/wiki/Balls_into_bins_problem) model of the Last-Level-Cache implementing MIRAGE is provided in a C++ program, to quantify its security properties.  This aspect can be easily evaluated on a commodity CPU (perhaps even a laptop with 4-cores/8 threads) in 3-6 hours runtime, without major SW dependencies. Your will be able to recreate all the Security-Analysis related tables and graphs: *Fig-7, Table-1, Fig-9, Fig-10, Table-4*. 
+- **Performance Analysis of MIRAGE:** An implementation of the MIRAGE LLC is provided as a part of the [Gem5 CPU Simulator](https://www.gem5.org/). To run the performance evaluations, a server-grade system is needed (at least 30 threads preferred) and the expected runtime is 12 - 24 hours. You are also required to have access to the SPEC-2006 benchmark suite (we are unable to provide this due to its restrictive license). You will be able to recreate the performance results provided in Appendix-B.  
   - Note that the main performance results in the paper were generated with a cache simulator using an Intel Pin version that is no longer publicly available. Hence, for the artifact, we are providing MIRAGE implemented in Gem5 (results in Appendix-B), which is much easier to open-source and replicate. We plan to add other results shown in the paper to the Gem5 implementation, before open-sourcing it.
 
 ### Requirements For Security Evaluation:  
@@ -50,7 +50,7 @@ Here you can recreate all the Security-Analysis related tables and graphs: *Fig-
 
 
 ### Steps for Gem5 Evaluation
-Here you will recreate results in Appendix-B: *Table-11*, by executing the following steps:
+Here you will recreate results in Appendix-B: *Fig-15*, by executing the following steps:
 - **Compile Gem5:** `cd perf_analysis/gem5 ; scons -j50 build/X86/gem5.opt`
 - **Set Paths** in `scripts/env.sh`. You will set the following :
     - `GEM5_PATH`: the full path of the gem5 directory (current directory).
@@ -58,20 +58,36 @@ Here you will recreate results in Appendix-B: *Table-11*, by executing the follo
     - `CKPT_PATH`: the path to a new folder where the checkpoints will be created next.
     - Please source the paths as: `source scripts/env.sh` after modifying the file.
 - **Test Creating and Running Checkpoints:** For each program the we need to create a checkpoint of the program state after the initialization phase of the program is complete, which will be used to run the simulations with different hardware configurations. 
-    - To test the checkpointing process, run `cd scripts; ./ckptscript_test.sh perlbench;`: this will create a checkpoint after 100K instructions (should complete in a couple of minutes). Once it completes, run `./runscript_test.sh perlbench Test Baseline`: this will run the baseline design for 500K instructions from the checkpoint.
-    - To check if the run is successfully complete, check `less ../output/ooo_4Gmem_100K/Test/Baseline/perlbench/runscript.log`. The last line should have `Exiting .. because a thread reached the max instruction count`.
-- **Create and Run Checkpoints:** For all the benchmarks, run `./run_all_exp.sh`. This will run the following steps:
-    - **Create Checkpoint:** For each benchmark, the checkpoints will be created using `./ckptscript.sh <BMARK>`. 
-      * By default, the `ckptscript.sh` is run for 15 programs in parallel (please modify run_all_exp.sh if your system cannot support 15 parallel threads).
-      * For each program, the execution is forwarded by 10 Billion Instructions (by when the initialization of the program should have completed) and then the architectural state (e.g. registers, memory) is checkpointed. Subsequently, when each HW-config is simulated, these checkpoints will be reloaded.
-      * This process can take a 2-3 hours for each benchmark. Hence, all the benchmarks are run in parallel by default.
-      * Please see `../configs/example/spec06_config.py` for list of benchmarks supported.
-    - **Run the experiments**: Once all the checkpoints are created, the experiments will be run using `./runscript.sh <BMARK> <RUN-NAME> <SCHEME>`, where each HW config is simulated for each benchmark.
-      * The arguments for `runscript.sh` are as follows:
-        -  RUN-NAME: Any string that will be used to identify this run, and the name for the results-folder of this run.
-        -  SCHEME: [Baseline, scatter-cache, skew-vway-rand]. (skew-vway-rand is essentially MIRAGE).
-      * Each program is simulated for 500 million instructions. This should take 1 hour per benchmark, per scheme. All 15 benchmarks are run in parallel, and after one scheme finishes, the next scheme is run.
-    - **Visualize the results:** `cd stats_scripts; ./data_perf.sh`. This will compare the normalized cycles per instruction (CPI) for each configuration.
-      * The slowdown in peformance results will be stored in `stats_scripts/data/perf.stat`. 
-      * Script to collect the LLC misses-per-thousand-instructions (MPKI) for each of the schemes is also available in `stats_scripts/data_mpki.sh`.
- 
+    - To test the checkpointing process, run `cd scripts; ./ckptscript_test.sh perlbench 4;`: this will create a checkpoint after 100K instructions (should complete in a couple of minutes). Once it completes, run `./runscript_test.sh perlbench Test Baseline 4 8MB 3`: this will run the baseline design for 500K instructions from the checkpoint.
+    - To check if the run is successfully complete, check `less ../output/multiprogram_8Gmem_100K.C4/Test/Baseline/perlbench/runscript.log`. The last line should have `Exiting .. because a thread reached the max instruction count`.
+- **Run the experiments:** for all the benchmarks, run `./run_all_exp.sh`. This will run the following scripts:
+    - `./run.perf.4C.sh` - This creates checkpoints and runs the experiments for the performance-results with 8MB LLC (shared among 4-cores). Specifically it runs:
+      * **Create Checkpoint:** For each benchmark, the checkpoints will be created using `./ckptscript.sh <BMARK> 4`. 
+      	- By default, `ckptscript.sh` is run for 42 programs in parallel (14 single-program, 14 multi-core and  14 mixed workloads). Please modify run.perf.4C.sh if your system cannot support 28 - 42 parallel threads.
+      	- For each program, the execution is forwarded by 10 Billion Instructions (by when the initialization of the program should have completed) and then the architectural state (e.g. registers, memory) is checkpointed. Subsequently, when each HW-config is simulated, these checkpoints will be reloaded.
+      	- This process can take 12 hours for each benchmark. Hence, all the benchmarks are run in parallel by default.
+      	- Please see `../configs/example/spec06_config.py` for list of benchmarks supported.
+      * **Run the experiments**: Once all the checkpoints are created, the experiments will be run using `./runscript.sh <BMARK> <RUN-NAME> <SCHEME>`, where each HW config (Baseline, Scatter-Cache, MIRAGE) is simulated for each benchmark.
+      	- The arguments for `runscript.sh` are as follows:
+          -  RUN-NAME: Any string that will be used to identify this run, and the name for the results-folder of this run.
+          -  SCHEME: [Baseline, scatter-cache, skew-vway-rand]. (skew-vway-rand is essentially MIRAGE).
+	  -  NUM_CORES: Number of cores (default is 4).
+ 	  -  LLCSZ: Size of the LLC (default is 8MB).
+	  -  ENCRLAT: Encryptor Latency (default is 3 cycles).
+      	- Each program is simulated for 1 billion instructions. This takes ~8 hours per benchmark, per scheme. Benchmarks in 2-3 schemes are run in parallel for a total of up to 84 parallel Gem5 runs at a time (please modify run.perf.4C.sh if your system cannot support upto 80 parallel threads).
+      * **Generate results:** `cd stats_scripts; ./data_perf.sh`. This will compare the normalized performance (using weighted speedup metric) vs baseline.
+        - The normalized peformance results will be stored in `stats_scripts/data/perf.stat`. 
+        - Script to collect the LLC misses-per-thousand-instructions (MPKI) for each of the schemes is also available in `stats_scripts/data_mpki.sh`.
+    -`./run.sensitivity.cachesz.sh` - This runs the evaluations for sensitivity to LLC-Size from 2MB to 64MB (shared between 4-cores)
+      * Experiments are run using the script `./runscript.sh`
+      * Results for normalized Perf vs. LLCSz can be generated using `cd stats_scripts; ./data_LLCSz.sh`. 
+      * Results are stored in `stats_scripts/data/perf.LLCSz.stat`.
+    -`./run.sensitivity.encrlat.sh` - This runs the evaluations for Encryption-latencies from 1 to 5 (used in cache-indexing).
+      * Experiments are run using the script `./runscript.sh`
+      * Results for normalized Perf vs. EncrLat can be generated using `cd stats_scripts; ./data_EncrLat.sh`. 
+      * Results are stored in `stats_scripts/data/perf.EncLat.stat`.
+- **Visualize the results:** Graphs can be generated using jupyter notebook `graphs/plot_graphs.ipynb` for Performance, LLCSz vs Perf., EncrLat vs Perf.
+- **Steps to Decrease Simulation Time:** 
+    - Simulation instruction count in `runscript.sh` can be reduced to 500 Million instructions to reduce time for experiments.
+    - You can just run `./run.perf.4C.sh` instead of `run_all_exp.sh` and skip the sensitivity analysis if you are just starting off.
+    - You can fire off more experiments in parallel if your system supports it by commenting out the sleep while-loops in `run.perf.4C.sh` and `run.sensitivity.*.sh`.
