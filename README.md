@@ -88,6 +88,6 @@ Here you will recreate results in Appendix-B(Fig-15), by executing the following
       * Results are stored in `stats_scripts/data/perf.EncLat.stat`.
 - **Visualize the results:** Graphs can be generated using jupyter notebook `graphs/plot_graphs.ipynb` for Performance, LLCSz vs Perf., EncrLat vs Perf.
 - **Note on Simulation Time:** Running all experiments takes almost 3-4 days on a system supporting 72 threads. 
-    - If you need to shorten experiment run time, you may reduce instruction count in `runscript.sh`to 500 Millions.
+    - To shorten experiment run time, you may reduce instruction count in `runscript.sh`to 500 Million.
     - You can also run only `./run.perf.4C.sh` and skip the sensitivity analysis.
     - You can also run many more parallel gem5 sims if your system supports it by modifying the sleep-loops in `run.perf.4C.sh` and `run.sensitivity.*.sh`.
