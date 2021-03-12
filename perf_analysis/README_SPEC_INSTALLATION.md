@@ -9,10 +9,10 @@ For running the SPEC-CPU2006 benchmarks with Gem5, you need to create the run-di
 - After these steps,`ckptscript_test.sh perlbench 4` should hopefully work: the script should be able to `cd` into the correct run-directory for the SPEC-benchmark and run the correct executable name with the right input parameters. 
     - You can check the command used in `perf_analysis/gem5/output/multiprogram_8Gmem_100K.C4/checkpoint_out/perlbench/runscript.log` in the line after `Process stderr file: ..`.
 - Once perlbench is successfully tested, to generate the run directories for all the other benchmarks, use: `runspec --config=Example-linux64-amd64-gcc41.cfg --size=ref noreportable --tune=base --iterations=1 lbm soplex milc mcf sphinx3 libquantum cactusADM bzip2 perlbench hmmer gromacs sjeng gobmk gcc h264ref`.  
-- Note: After all benchmarks have their run-directories created, make sure run-directories of all benchmarks have the same naming format.    
+- Note: After all benchmark run-directories are created, please make sure run-directories of all benchmarks have the same naming format.    
 
 
-After completing these steps to set up SPEC-directories, you can try the next step with `runscript_test.sh` in [README.md](https://github.com/gururaj-s/mirage/blob/master/README.md) to test Gem5 functionality and then run all the experiments.
+After completing these steps, all the SPEC benchmnark run-directories should be set up. Now, you can try the next step using `runscript_test.sh` in [README.md](https://github.com/gururaj-s/mirage/blob/master/README.md) to test Gem5 functionality and then run all the experiments.
 
 
 
