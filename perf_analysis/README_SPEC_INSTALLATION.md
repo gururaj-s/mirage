@@ -7,7 +7,7 @@ For running the SPEC-CPU2006 benchmarks with Gem5, you need to create the run-di
     - Check the name of the executable `$SPEC_PATH/benchspec/CPU2006/400.perlbench/run/run*/perlbench*`. On our system, the binary name is `perlbench_base.amd64-m64-gcc41-nn`. Note the suffix after `perlbench` (e.g. `_base.amd64-m64-gcc41-nn`).
     - Edit `perf_analysis/gem5/configs/example/spec06_benchmarks.py`: Replace `x86_suffix` variable with the suffix on your system.  
 - After these steps,`ckptscript_test.sh perlbench 4` should hopefully work: the script should be able to `cd` into the correct run-directory for the SPEC-benchmark and run the correct executable name with the right input parameters. 
-    - You can check the command used in the file `perf_analysis/gem5/output/multiprogram_8Gmem_100K.C4/checkpoint_out/perlbench/runscript.log` at the line after `Process stderr file: ..`.
+    - You can check the command used in `perf_analysis/gem5/output/multiprogram_8Gmem_100K.C4/checkpoint_out/perlbench/runscript.log` in the line after `Process stderr file: ..`.
 - Once perlbench is successfully tested, to generate the run directories for all the other benchmarks, use: `runspec --config=Example-linux64-amd64-gcc41.cfg --size=ref noreportable --tune=base --iterations=1 lbm soplex milc mcf sphinx3 libquantum cactusADM bzip2 perlbench hmmer gromacs sjeng gobmk gcc h264ref`.  
 - Note: After all benchmarks have their run-directories created, make sure run-directories of all benchmarks have the same naming format.    
 
