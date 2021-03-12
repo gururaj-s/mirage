@@ -60,14 +60,14 @@ Here you will recreate results in Appendix-B: *Fig-15*, by executing the followi
 - **Test Creating and Running Checkpoints:** For each program the we need to create a checkpoint of the program state after the initialization phase of the program is complete, which will be used to run the simulations with different hardware configurations. 
     - To test the checkpointing process, run `cd scripts; ./ckptscript_test.sh perlbench 4;`: this will create a checkpoint after 100K instructions (should complete in a couple of minutes). Once it completes, run `./runscript_test.sh perlbench Test Baseline 4 8MB 3`: this will run the baseline design for 500K instructions from the checkpoint.
     - To check if the run is successfully complete, check `less ../output/multiprogram_8Gmem_100K.C4/Test/Baseline/perlbench/runscript.log`. The last line should have `Exiting .. because a thread reached the max instruction count`.
-- **Run the experiments:** for all the benchmarks, run `./run_all_exp.sh`. This will run the following scripts:
+- **Run All Experiments:** for all the benchmarks, run `./run_all_exp.sh`. This will run the following scripts:
     - `./run.perf.4C.sh` - This creates checkpoints and runs the experiments for the performance-results with 8MB LLC (shared among 4-cores). Specifically it runs:
       * **Create Checkpoint:** For each benchmark, the checkpoints will be created using `./ckptscript.sh <BMARK> 4`. 
       	- By default, `ckptscript.sh` is run for 42 programs in parallel (14 single-program, 14 multi-core and  14 mixed workloads). Please modify run.perf.4C.sh if your system cannot support 28 - 42 parallel threads.
       	- For each program, the execution is forwarded by 10 Billion Instructions (by when the initialization of the program should have completed) and then the architectural state (e.g. registers, memory) is checkpointed. Subsequently, when each HW-config is simulated, these checkpoints will be reloaded.
       	- This process can take 12 hours for each benchmark. Hence, all the benchmarks are run in parallel by default.
       	- Please see `../configs/example/spec06_config.py` for list of benchmarks supported.
-      * **Run the experiments**: Once all the checkpoints are created, the experiments will be run using `./runscript.sh <BMARK> <RUN-NAME> <SCHEME>`, where each HW config (Baseline, Scatter-Cache, MIRAGE) is simulated for each benchmark.
+      * **Run experiments**: Once all the checkpoints are created, the experiments will be run using `./runscript.sh <BMARK> <RUN-NAME> <SCHEME>`, where each HW config (Baseline, Scatter-Cache, MIRAGE) is simulated for each benchmark.
       	- The arguments for `runscript.sh` are as follows:
           -  RUN-NAME: Any string that will be used to identify this run, and the name for the results-folder of this run.
           -  SCHEME: [Baseline, scatter-cache, skew-vway-rand]. (skew-vway-rand is MIRAGE).
@@ -78,11 +78,11 @@ Here you will recreate results in Appendix-B: *Fig-15*, by executing the followi
       * **Generate results:** `cd stats_scripts; ./data_perf.sh`. This will compare the normalized performance (using weighted speedup metric) vs baseline.
         - The normalized peformance results will be stored in `stats_scripts/data/perf.stat`. 
         - Script to collect the LLC misses-per-thousand-instructions (MPKI) for each of the schemes is also available in `stats_scripts/data_mpki.sh`.
-    -`./run.sensitivity.cachesz.sh` - This runs the evaluations for sensitivity to LLC-Size from 2MB to 64MB (shared between 4-cores)
+    - `./run.sensitivity.cachesz.sh` - This runs the evaluations for sensitivity to LLC-Size from 2MB to 64MB (shared between 4-cores)
       * Experiments are run using the script `./runscript.sh`
       * Results for normalized Perf vs. LLCSz can be generated using `cd stats_scripts; ./data_LLCSz.sh`. 
       * Results are stored in `stats_scripts/data/perf.LLCSz.stat`.
-    -`./run.sensitivity.encrlat.sh` - This runs the evaluations for Encryption-latencies from 1 to 5 (used in cache-indexing).
+    - `./run.sensitivity.encrlat.sh` - This runs the evaluations for Encryption-latencies from 1 to 5 (used in cache-indexing).
       * Experiments are run using the script `./runscript.sh`
       * Results for normalized Perf vs. EncrLat can be generated using `cd stats_scripts; ./data_EncrLat.sh`. 
       * Results are stored in `stats_scripts/data/perf.EncLat.stat`.
